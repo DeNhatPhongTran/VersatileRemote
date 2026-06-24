@@ -1,0 +1,36 @@
+# ====================================================================
+# STM32CubeIDE & GCC Toolchain Build Outputs
+# ====================================================================
+Debug/
+Release/
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+*.su
+*.o
+*.d
+
+# ====================================================================
+# STM32CubeIDE Project & User Specific Settings
+# ====================================================================
+.settings/
+.idx/
+*.bak
+*.ewp
+*.eww
+*.ewd
+
+# ====================================================================
+# TouchGFX Generated and Temporary Files
+# ====================================================================
+**/TouchGFX/generated/
+**/TouchGFX/build/
+**/TouchGFX/simulator/msvs/.vs/
+**/TouchGFX/simulator/msvs/Debug/
+**/TouchGFX/simulator/msvs/Release/
+**/TouchGFX/simulator/gcc/build/
+
+# Loại bỏ các file log tạm thời của trình biên dịch Ruby/Make
+*.log

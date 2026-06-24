@@ -1,0 +1,754 @@
+{
+  "Application": {
+    "Screens": [
+      {
+        "Name": "TV_Screen",
+        "Components": [
+          {
+            "Type": "Box",
+            "Name": "box2",
+            "Width": 240,
+            "Height": 320,
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            }
+          },
+          {
+            "Type": "Container",
+            "Name": "ui_body",
+            "Y": 40,
+            "Width": 240,
+            "Height": 280,
+            "Components": [
+              {
+                "Type": "Container",
+                "Name": "layer1",
+                "X": 60,
+                "Y": 103,
+                "Width": 60,
+                "Height": 160,
+                "Components": [
+                  {
+                    "Type": "FlexButton",
+                    "Name": "button_up",
+                    "Width": 40,
+                    "Height": 40,
+                    "ButtonTrigger": {
+                      "Type": "ClickButtonTrigger"
+                    },
+                    "ButtonStyles": [
+                      {
+                        "Type": "IconButtonStyle",
+                        "X": -9,
+                        "Y": -9,
+                        "IconReleased": "__generated\\icon_theme_images_navigation_arrow_drop_up_60_60_E8F6FB.svg.png",
+                        "IconPressed": "__generated\\icon_theme_images_navigation_arrow_drop_up_60_60_E8F6FB.svg.png"
+                      },
+                      {
+                        "Type": "BoxWithBorderButtonStyle",
+                        "Width": 40,
+                        "Height": 40,
+                        "LockToFlexButtonSize": true,
+                        "ColorReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorPressed": {
+                          "Green": 153,
+                          "Blue": 204
+                        },
+                        "ColorBorderReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorBorderPressed": {
+                          "Red": 51,
+                          "Green": 102,
+                          "Blue": 153
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "Type": "FlexButton",
+                    "Name": "button_ok",
+                    "Y": 50,
+                    "Width": 40,
+                    "Height": 40,
+                    "ButtonTrigger": {
+                      "Type": "ClickButtonTrigger"
+                    },
+                    "ButtonStyles": [
+                      {
+                        "Type": "IconButtonStyle",
+                        "IconReleased": "__generated\\icon_theme_images_action_drag_indicator_40_40_E8F6FB.svg.png",
+                        "IconPressed": "__generated\\icon_theme_images_action_drag_indicator_40_40_E8F6FB.svg.png"
+                      },
+                      {
+                        "Type": "BoxWithBorderButtonStyle",
+                        "Width": 40,
+                        "Height": 40,
+                        "LockToFlexButtonSize": true,
+                        "ColorReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorPressed": {
+                          "Green": 153,
+                          "Blue": 204
+                        },
+                        "ColorBorderReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorBorderPressed": {
+                          "Red": 51,
+                          "Green": 102,
+                          "Blue": 153
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "Type": "FlexButton",
+                    "Name": "button_down",
+                    "Y": 100,
+                    "Width": 40,
+                    "Height": 40,
+                    "ButtonTrigger": {
+                      "Type": "ClickButtonTrigger"
+                    },
+                    "ButtonStyles": [
+                      {
+                        "Type": "IconButtonStyle",
+                        "X": -9,
+                        "Y": -9,
+                        "IconReleased": "__generated\\icon_theme_images_navigation_arrow_drop_down_60_60_E8F6FB.svg.png",
+                        "IconPressed": "__generated\\icon_theme_images_navigation_arrow_drop_down_60_60_E8F6FB.svg.png"
+                      },
+                      {
+                        "Type": "BoxWithBorderButtonStyle",
+                        "Width": 40,
+                        "Height": 40,
+                        "LockToFlexButtonSize": true,
+                        "ColorReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorPressed": {
+                          "Green": 153,
+                          "Blue": 204
+                        },
+                        "ColorBorderReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorBorderPressed": {
+                          "Red": 51,
+                          "Green": 102,
+                          "Blue": 153
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Type": "Container",
+                "Name": "layer2",
+                "X": 160,
+                "Y": 103,
+                "Width": 60,
+                "Height": 160,
+                "Components": [
+                  {
+                    "Type": "FlexButton",
+                    "Name": "button_up_1",
+                    "Width": 40,
+                    "Height": 40,
+                    "ButtonTrigger": {
+                      "Type": "ClickButtonTrigger"
+                    },
+                    "ButtonStyles": [
+                      {
+                        "Type": "IconButtonStyle",
+                        "X": -9,
+                        "Y": -9,
+                        "IconReleased": "__generated\\icon_theme_images_navigation_arrow_drop_up_60_60_E8F6FB.svg.png",
+                        "IconPressed": "__generated\\icon_theme_images_navigation_arrow_drop_up_60_60_E8F6FB.svg.png"
+                      },
+                      {
+                        "Type": "BoxWithBorderButtonStyle",
+                        "Width": 40,
+                        "Height": 40,
+                        "LockToFlexButtonSize": true,
+                        "ColorReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorPressed": {
+                          "Green": 153,
+                          "Blue": 204
+                        },
+                        "ColorBorderReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorBorderPressed": {
+                          "Red": 51,
+                          "Green": 102,
+                          "Blue": 153
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "Type": "FlexButton",
+                    "Name": "button_ok_1",
+                    "Y": 50,
+                    "Width": 40,
+                    "Height": 40,
+                    "ButtonTrigger": {
+                      "Type": "ClickButtonTrigger"
+                    },
+                    "ButtonStyles": [
+                      {
+                        "Type": "IconButtonStyle",
+                        "IconReleased": "__generated\\icon_theme_images_av_volume_mute_40_40_E8F6FB.svg.png",
+                        "IconPressed": "__generated\\icon_theme_images_av_volume_off_40_40_E8F6FB.svg.png"
+                      },
+                      {
+                        "Type": "BoxWithBorderButtonStyle",
+                        "Width": 40,
+                        "Height": 40,
+                        "LockToFlexButtonSize": true,
+                        "ColorReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorPressed": {
+                          "Green": 153,
+                          "Blue": 204
+                        },
+                        "ColorBorderReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorBorderPressed": {
+                          "Red": 51,
+                          "Green": 102,
+                          "Blue": 153
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "Type": "FlexButton",
+                    "Name": "button_down_1",
+                    "Y": 100,
+                    "Width": 40,
+                    "Height": 40,
+                    "ButtonTrigger": {
+                      "Type": "ClickButtonTrigger"
+                    },
+                    "ButtonStyles": [
+                      {
+                        "Type": "IconButtonStyle",
+                        "X": -9,
+                        "Y": -9,
+                        "IconReleased": "__generated\\icon_theme_images_navigation_arrow_drop_down_60_60_E8F6FB.svg.png",
+                        "IconPressed": "__generated\\icon_theme_images_navigation_arrow_drop_down_60_60_E8F6FB.svg.png"
+                      },
+                      {
+                        "Type": "BoxWithBorderButtonStyle",
+                        "Width": 40,
+                        "Height": 40,
+                        "LockToFlexButtonSize": true,
+                        "ColorReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorPressed": {
+                          "Green": 153,
+                          "Blue": 204
+                        },
+                        "ColorBorderReleased": {
+                          "Red": 135,
+                          "Green": 135,
+                          "Blue": 135
+                        },
+                        "ColorBorderPressed": {
+                          "Red": 51,
+                          "Green": 102,
+                          "Blue": 153
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Type": "CustomContainerInstance",
+                "Name": "powerButton1",
+                "X": 95,
+                "Y": 12,
+                "Width": 70,
+                "Height": 70,
+                "CustomContainerDefinitionName": "PowerButton"
+              }
+            ]
+          },
+          {
+            "Type": "CustomContainerInstance",
+            "Name": "header1",
+            "Width": 240,
+            "Height": 40,
+            "CustomContainerDefinitionName": "Header"
+          },
+          {
+            "Type": "CustomContainerInstance",
+            "Name": "deviceMenu1",
+            "Width": 240,
+            "Height": 320,
+            "CustomContainerDefinitionName": "DeviceMenu"
+          }
+        ],
+        "Interactions": []
+      }
+    ],
+    "CustomContainerDefinitions": [
+      {
+        "Name": "Header",
+        "Width": 240,
+        "Height": 40,
+        "Components": [
+          {
+            "Type": "Box",
+            "Name": "box1",
+            "Width": 240,
+            "Height": 40,
+            "Color": {
+              "Red": 135,
+              "Green": 135,
+              "Blue": 135
+            }
+          },
+          {
+            "Type": "Container",
+            "Name": "goto_TV",
+            "X": 65,
+            "Y": 5,
+            "Width": 30,
+            "Height": 30,
+            "Components": [
+              {
+                "Type": "FlexButton",
+                "Name": "tv",
+                "Width": 30,
+                "Height": 30,
+                "ButtonTrigger": {
+                  "Type": "ClickButtonTrigger"
+                },
+                "ButtonStyles": [
+                  {
+                    "Type": "IconButtonStyle",
+                    "X": 4,
+                    "Y": 5,
+                    "IconReleased": "__generated\\icon_theme_images_hardware_tv_23_23_E8F6FB.svg.png",
+                    "IconPressed": "__generated\\icon_theme_images_hardware_tv_23_23_E8F6FB.svg.png"
+                  },
+                  {
+                    "Type": "BoxWithBorderButtonStyle",
+                    "Width": 30,
+                    "Height": 30,
+                    "LockToFlexButtonSize": true,
+                    "BorderSize": 1,
+                    "ColorReleased": {
+                      "Red": 135,
+                      "Green": 135,
+                      "Blue": 135
+                    },
+                    "ColorPressed": {
+                      "Green": 153,
+                      "Blue": 204
+                    },
+                    "ColorBorderReleased": {
+                      "Red": 135,
+                      "Green": 135,
+                      "Blue": 135
+                    },
+                    "ColorBorderPressed": {
+                      "Red": 51,
+                      "Green": 102,
+                      "Blue": 153
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Type": "Container",
+            "Name": "goto_AC",
+            "X": 110,
+            "Y": 5,
+            "Width": 30,
+            "Height": 30,
+            "Components": [
+              {
+                "Type": "FlexButton",
+                "Name": "air_conditional",
+                "Width": 30,
+                "Height": 30,
+                "ButtonTrigger": {
+                  "Type": "ClickButtonTrigger"
+                },
+                "ButtonStyles": [
+                  {
+                    "Type": "IconButtonStyle",
+                    "X": 4,
+                    "Y": 5,
+                    "IconReleased": "__generated\\icon_theme_images_av_airplay_23_23_E8F6FB.svg.png",
+                    "IconPressed": "__generated\\icon_theme_images_av_airplay_23_23_E8F6FB.svg.png"
+                  },
+                  {
+                    "Type": "BoxWithBorderButtonStyle",
+                    "Width": 30,
+                    "Height": 30,
+                    "LockToFlexButtonSize": true,
+                    "BorderSize": 1,
+                    "ColorReleased": {
+                      "Red": 135,
+                      "Green": 135,
+                      "Blue": 135
+                    },
+                    "ColorPressed": {
+                      "Green": 153,
+                      "Blue": 204
+                    },
+                    "ColorBorderReleased": {
+                      "Red": 135,
+                      "Green": 135,
+                      "Blue": 135
+                    },
+                    "ColorBorderPressed": {
+                      "Red": 51,
+                      "Green": 102,
+                      "Blue": 153
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Type": "Container",
+            "Name": "goto_PR",
+            "X": 155,
+            "Y": 5,
+            "Width": 30,
+            "Height": 30,
+            "Components": [
+              {
+                "Type": "FlexButton",
+                "Name": "projector",
+                "Width": 30,
+                "Height": 30,
+                "ButtonTrigger": {
+                  "Type": "ClickButtonTrigger"
+                },
+                "ButtonStyles": [
+                  {
+                    "Type": "IconButtonStyle",
+                    "X": 4,
+                    "Y": 5,
+                    "IconReleased": "__generated\\icon_theme_images_file_approval_23_23_E8F6FB.svg.png",
+                    "IconPressed": "__generated\\icon_theme_images_file_approval_23_23_E8F6FB.svg.png"
+                  },
+                  {
+                    "Type": "BoxWithBorderButtonStyle",
+                    "Width": 30,
+                    "Height": 30,
+                    "LockToFlexButtonSize": true,
+                    "BorderSize": 1,
+                    "ColorReleased": {
+                      "Red": 135,
+                      "Green": 135,
+                      "Blue": 135
+                    },
+                    "ColorPressed": {
+                      "Green": 153,
+                      "Blue": 204
+                    },
+                    "ColorBorderReleased": {
+                      "Red": 135,
+                      "Green": 135,
+                      "Blue": 135
+                    },
+                    "ColorBorderPressed": {
+                      "Red": 51,
+                      "Green": 102,
+                      "Blue": 153
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "flexButton1",
+            "X": 200,
+            "Y": 5,
+            "Width": 30,
+            "Height": 30,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "X": 4,
+                "Y": 4,
+                "IconReleased": "__generated\\icon_theme_images_content_add_circle_outline_23_23_E8F6FB.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_content_add_circle_outline_23_23_E8F6FB.svg.png"
+              },
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 30,
+                "Height": 30,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 1,
+                "ColorReleased": {
+                  "Green": 102,
+                  "Blue": 153
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          }
+        ],
+        "Interactions": []
+      },
+      {
+        "Name": "PowerButton",
+        "Y": 40,
+        "Width": 70,
+        "Height": 70,
+        "Components": [
+          {
+            "Type": "FlexButton",
+            "Name": "power",
+            "Width": 70,
+            "Height": 70,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "IconButtonStyle",
+                "X": 2,
+                "Y": 2,
+                "IconReleased": "__generated\\icon_theme_images_action_power_settings_new_65_65_E8F6FB.svg.png",
+                "IconPressed": "__generated\\icon_theme_images_action_power_settings_new_65_65_076585.svg.png"
+              },
+              {
+                "Type": "ImageButtonStyle",
+                "ImageReleased": "__generated\\icon_theme_images_image_circle_70_70_FF0000.svg.png",
+                "ImagePressed": "__generated\\icon_theme_images_image_circle_70_70_000000.svg.png"
+              }
+            ]
+          }
+        ],
+        "Interactions": []
+      },
+      {
+        "Name": "ButtonDevice",
+        "Width": 120,
+        "Height": 30,
+        "Components": [
+          {
+            "Type": "FlexButton",
+            "Name": "device",
+            "Width": 120,
+            "Height": 30,
+            "Alpha": 38,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "BoxWithBorderButtonStyle",
+                "Width": 120,
+                "Height": 30,
+                "LockToFlexButtonSize": true,
+                "BorderSize": 1,
+                "ColorReleased": {
+                  "Red": 2,
+                  "Green": 123,
+                  "Blue": 184
+                },
+                "ColorPressed": {
+                  "Green": 153,
+                  "Blue": 204
+                },
+                "ColorBorderReleased": {
+                  "Green": 51,
+                  "Blue": 102
+                },
+                "ColorBorderPressed": {
+                  "Red": 51,
+                  "Green": 102,
+                  "Blue": 153
+                }
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "textArea1",
+            "X": 2,
+            "Y": 3,
+            "Width": 91,
+            "Height": 24,
+            "TextId": "__SingleUse_U3RZ",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "AutoSize": true
+          }
+        ],
+        "Interactions": []
+      },
+      {
+        "Name": "DeviceMenu",
+        "Width": 240,
+        "Height": 320,
+        "Components": [
+          {
+            "Type": "SlideMenu",
+            "Name": "slideMenu1",
+            "Width": 240,
+            "Height": 320,
+            "FileNameBackground": "__generated\\alternate_theme_images_backgrounds_240x320_poly.png",
+            "UseButton": true,
+            "FileNameButtonPressed": "__generated\\icon_theme_images_navigation_switch_left_48_48_FFFFFF.svg.png",
+            "FileNameButtonReleased": "__generated\\icon_theme_images_navigation_switch_left_48_48_FFFFFF.svg.png",
+            "ButtonX": 190,
+            "State": "Collapsed",
+            "ExpandDirection": "East",
+            "Easing": "Cubic",
+            "EasingOption": "InOut",
+            "AnimationDuration": 100,
+            "VisiblePixelsWhenCollapsed": 30,
+            "HiddenPixelsWhenExpanded": 120,
+            "Components": [
+              {
+                "Type": "ScrollList",
+                "Name": "scrollList1",
+                "X": 119,
+                "Y": 40,
+                "Width": 120,
+                "Height": 280,
+                "ItemTemplateName": "ButtonDevice",
+                "NumberofItems": 10,
+                "Easing": "Back",
+                "EasingOption": "Out",
+                "SwipeAcceleration": 1.0,
+                "DragAcceleration": 1.0,
+                "OverShootPercentage": 75
+              }
+            ]
+          }
+        ],
+        "Interactions": []
+      }
+    ],
+    "Name": "DieuKhienDaNang",
+    "Resolution": {
+      "Width": 240,
+      "Height": 320
+    },
+    "SelectedColorDepth": 16,
+    "StartupScreenName": "TV_Screen",
+    "SelectedStartupLanguage": "GB",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "UIPath": ".",
+    "AvailableColorDepths": [
+      16
+    ],
+    "AvailableLCDs": {
+      "16": "LCD16bpp"
+    },
+    "AvailableSections": [
+      "ExtFlashSection",
+      "IntFlashSection"
+    ],
+    "AvailableResolutions": [
+      {
+        "Width": 240,
+        "Height": 320
+      }
+    ],
+    "PhysicalButtons": [],
+    "FrameworkFeatures": {
+      "LCD16bpp": {
+        "Id": "LCD16bpp",
+        "IsEnabled": true
+      }
+    },
+    "GenerateAssetsCommand": "make -f simulator/gcc/Makefile assets -j8",
+    "PostGenerateCommand": "touchgfx update_project --project-file=simulator/msvs/Application.vcxproj",
+    "PostGenerateTargetCommand": "touchgfx update_project",
+    "CompileSimulatorCommand": "make -f simulator/gcc/Makefile -j8",
+    "RunSimulatorCommand": "build\\bin\\simulator.exe",
+    "CompileTargetCommandOverride": "make -f ../gcc/Makefile -j8",
+    "FlashTargetCommandOverride": "make -f ../gcc/Makefile flash",
+    "LandscapeSkinX": 0,
+    "LandscapeSkinY": 0,
+    "PortraitSkinX": 0,
+    "PortraitSkinY": 0,
+    "DisplayOrientation": "Portrait",
+    "Family": "STM32F4",
+    "SubFamily": "STM32F429/439",
+    "Toolchain": "STM32CubeIDE",
+    "Platform": "m4",
+    "ProjectFile": "../STM32F429I_DISCO_REV_D01.ioc",
+    "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
+    "OptionalComponents": [],
+    "AdditionalFeatures": [
+      "CWRVector",
+      "VectorFonts"
+    ]
+  },
+  "Version": "4.24.0",
+  "CreatedBy": "4.24.0"
+}
