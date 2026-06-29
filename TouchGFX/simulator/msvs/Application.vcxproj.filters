@@ -196,6 +196,30 @@
     <Filter Include="Header Files\generated\gui_generated\tv_screen_screen">
       <UniqueIdentifier>7EEA4405-BDE7-8C96-5953-3CE97C0E36EF</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\gui\ac_screen_screen">
+      <UniqueIdentifier>721407AE-CEEC-2F54-888C-6C89FE739C7C</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gui\ac_screen_screen">
+      <UniqueIdentifier>74FDB815-FA18-AFAE-E114-5D956144724B</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\generated\gui_generated\ac_screen_screen">
+      <UniqueIdentifier>90A75EF8-A077-EBD5-224B-DA455E12EDDE</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\generated\gui_generated\ac_screen_screen">
+      <UniqueIdentifier>006A4CF3-2607-6631-2DB1-B00007A2E001</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gui\add_device_screen">
+      <UniqueIdentifier>42C4E479-FF77-C32A-09CE-71FA6B9159D8</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\gui\add_device_screen">
+      <UniqueIdentifier>288477E5-72E0-3A75-F59D-0271D866A32B</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\generated\gui_generated\add_device_screen">
+      <UniqueIdentifier>4416D17B-2D2F-E0DD-F4CD-895C9A061B4D</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\generated\gui_generated\add_device_screen">
+      <UniqueIdentifier>0982A300-C9A1-E7E9-9A2A-72F3B5E1FC95</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(TouchGFXReleasePath)\framework\source\platform\driver\touch\SDL2TouchController.cpp">
@@ -246,12 +270,6 @@
     <ClCompile Include="..\..\generated\gui_generated\src\containers\DeviceMenuBase.cpp">
       <Filter>Source Files\generated\gui_generated\containers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\src\containers\PowerButton.cpp">
-      <Filter>Source Files\gui\containers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\generated\gui_generated\src\containers\PowerButtonBase.cpp">
-      <Filter>Source Files\generated\gui_generated\containers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\src\tv_screen_screen\TV_ScreenPresenter.cpp">
       <Filter>Source Files\gui\tv_screen_screen</Filter>
     </ClCompile>
@@ -260,6 +278,30 @@
     </ClCompile>
     <ClCompile Include="..\..\generated\gui_generated\src\tv_screen_screen\TV_ScreenViewBase.cpp">
       <Filter>Source Files\generated\gui_generated\tv_screen_screen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\src\ac_screen_screen\AC_ScreenPresenter.cpp">
+      <Filter>Source Files\gui\ac_screen_screen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\src\ac_screen_screen\AC_ScreenView.cpp">
+      <Filter>Source Files\gui\ac_screen_screen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\generated\gui_generated\src\ac_screen_screen\AC_ScreenViewBase.cpp">
+      <Filter>Source Files\generated\gui_generated\ac_screen_screen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\src\add_device_screen\Add_DevicePresenter.cpp">
+      <Filter>Source Files\gui\add_device_screen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\src\add_device_screen\Add_DeviceView.cpp">
+      <Filter>Source Files\gui\add_device_screen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\generated\gui_generated\src\add_device_screen\Add_DeviceViewBase.cpp">
+      <Filter>Source Files\generated\gui_generated\add_device_screen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\src\containers\ButtonPower.cpp">
+      <Filter>Source Files\gui\containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\generated\gui_generated\src\containers\ButtonPowerBase.cpp">
+      <Filter>Source Files\generated\gui_generated\containers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -721,12 +763,6 @@
     <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\containers\DeviceMenuBase.hpp">
       <Filter>Header Files\generated\gui_generated\containers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\gui\include\gui\containers\PowerButton.hpp">
-      <Filter>Header Files\gui\containers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\containers\PowerButtonBase.hpp">
-      <Filter>Header Files\generated\gui_generated\containers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\gui\include\gui\tv_screen_screen\TV_ScreenPresenter.hpp">
       <Filter>Header Files\gui\tv_screen_screen</Filter>
     </ClInclude>
@@ -735,6 +771,30 @@
     </ClInclude>
     <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\tv_screen_screen\TV_ScreenViewBase.hpp">
       <Filter>Header Files\generated\gui_generated\tv_screen_screen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\include\gui\ac_screen_screen\AC_ScreenPresenter.hpp">
+      <Filter>Header Files\gui\ac_screen_screen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\include\gui\ac_screen_screen\AC_ScreenView.hpp">
+      <Filter>Header Files\gui\ac_screen_screen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\ac_screen_screen\AC_ScreenViewBase.hpp">
+      <Filter>Header Files\generated\gui_generated\ac_screen_screen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\include\gui\add_device_screen\Add_DevicePresenter.hpp">
+      <Filter>Header Files\gui\add_device_screen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\include\gui\add_device_screen\Add_DeviceView.hpp">
+      <Filter>Header Files\gui\add_device_screen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\add_device_screen\Add_DeviceViewBase.hpp">
+      <Filter>Header Files\generated\gui_generated\add_device_screen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\include\gui\containers\ButtonPower.hpp">
+      <Filter>Header Files\gui\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\generated\gui_generated\include\gui_generated\containers\ButtonPowerBase.hpp">
+      <Filter>Header Files\generated\gui_generated\containers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

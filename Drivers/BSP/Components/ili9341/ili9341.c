@@ -166,7 +166,7 @@ void ili9341_Init(void)
   ili9341_WriteReg(LCD_VCOM2);
   ili9341_WriteData(0x90);
   ili9341_WriteReg(LCD_MAC);
-  ili9341_WriteData(0xC8);
+  ili9341_WriteData(0x08);
   ili9341_WriteReg(LCD_3GAMMA_EN);
   ili9341_WriteData(0x00);
   ili9341_WriteReg(LCD_RGB_INTERFACE);
