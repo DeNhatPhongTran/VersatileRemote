@@ -10,6 +10,8 @@ public:
     virtual ~ButtonDevice() {}
 
     virtual void initialize();
+
+    void setText(const char* text);
 protected:
 };
 

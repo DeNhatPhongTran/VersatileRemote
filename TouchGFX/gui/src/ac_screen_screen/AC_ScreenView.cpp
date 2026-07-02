@@ -14,3 +14,8 @@ void AC_ScreenView::tearDownScreen()
 {
     AC_ScreenViewBase::tearDownScreen();
 }
+
+void AC_ScreenView::updateDeviceList(const DeviceEntry* devs, int count)
+{
+    device_menu.setDevices(devs, count);
+}

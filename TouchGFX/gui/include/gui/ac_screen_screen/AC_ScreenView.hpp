@@ -3,6 +3,7 @@
 
 #include <gui_generated/ac_screen_screen/AC_ScreenViewBase.hpp>
 #include <gui/ac_screen_screen/AC_ScreenPresenter.hpp>
+#include <gui/model/Model.hpp>
 
 class AC_ScreenView : public AC_ScreenViewBase
 {
@@ -11,6 +12,8 @@ public:
     virtual ~AC_ScreenView() {}
     virtual void setupScreen();
     virtual void tearDownScreen();
+
+    void updateDeviceList(const DeviceEntry* devs, int count);
 protected:
 };
 

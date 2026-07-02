@@ -3,6 +3,7 @@
 
 #include <gui_generated/tv_screen_screen/TV_ScreenViewBase.hpp>
 #include <gui/tv_screen_screen/TV_ScreenPresenter.hpp>
+#include <gui/model/Model.hpp>
 
 class TV_ScreenView : public TV_ScreenViewBase
 {
@@ -11,6 +12,8 @@ public:
     virtual ~TV_ScreenView() {}
     virtual void setupScreen();
     virtual void tearDownScreen();
+
+    void updateDeviceList(const DeviceEntry* devs, int count);
 protected:
 };
 
