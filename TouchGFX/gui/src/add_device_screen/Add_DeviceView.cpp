@@ -4,7 +4,7 @@
 Add_DeviceView::Add_DeviceView() :
     acceptButtonCallback(this, &Add_DeviceView::acceptButtonCallbackHandler)
 {
-
+    typeNameBuffer[0] = '\0';
 }
 
 void Add_DeviceView::setupScreen()
@@ -36,13 +36,8 @@ void Add_DeviceView::showDeviceType(DeviceType type)
             break;
     }
 
-    touchgfx::Unicode::UnicodeChar buf[32];
-    uint16_t len = 0;
-    len += touchgfx::Unicode::strncpy(buf + len, "Add ", 32 - len);
-    len += touchgfx::Unicode::strncpy(buf + len, typeName, 32 - len);
-    len += touchgfx::Unicode::strncpy(buf + len, " Device", 32 - len);
-    buf[len] = '\0';
-    deviceName.setWildcard(buf);
+    touchgfx::Unicode::strncpy(typeNameBuffer, typeName, 32);
+    deviceName.setWildcard(typeNameBuffer);
     deviceName.invalidate();
 }
 

@@ -18,6 +18,8 @@ public:
 protected:
     touchgfx::Callback<Add_DeviceView, const touchgfx::AbstractButtonContainer&> acceptButtonCallback;
     void acceptButtonCallbackHandler(const touchgfx::AbstractButtonContainer& src);
+
+    touchgfx::Unicode::UnicodeChar typeNameBuffer[32];
 };
 
 #endif // ADD_DEVICEVIEW_HPP
