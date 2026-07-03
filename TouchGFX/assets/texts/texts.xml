@@ -10,7 +10,7 @@
         <Translation Language="GB">Signal_ID</Translation>
       </Text>
       <Text Id="__SingleUse_SPHM" Alignment="Center" TypographyId="Default">
-        <Translation Language="GB">Device_{type}_id</Translation>
+        <Translation Language="GB">Add &lt;value&gt; Device</Translation>
       </Text>
       <Text Id="__SingleUse_2C8X" Alignment="Center" TypographyId="NarrowSpace">
         <Translation Language="GB">&lt;&gt;%</Translation>

@@ -831,7 +831,8 @@
             "Width": 200,
             "Height": 24,
             "TextId": "__SingleUse_SPHM",
-            "TextRotation": "0"
+            "TextRotation": "0",
+            "Wildcard1": {}
           },
           {
             "Type": "TextArea",
