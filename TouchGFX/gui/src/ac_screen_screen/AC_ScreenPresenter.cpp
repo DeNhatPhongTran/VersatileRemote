@@ -21,3 +21,8 @@ void AC_ScreenPresenter::deactivate()
 {
 
 }
+
+void AC_ScreenPresenter::onDeviceSelected(const DeviceEntry& device)
+{
+    model->setActiveDevice(device);
+}

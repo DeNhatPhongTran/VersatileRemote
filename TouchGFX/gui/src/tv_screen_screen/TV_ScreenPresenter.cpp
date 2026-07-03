@@ -21,3 +21,8 @@ void TV_ScreenPresenter::deactivate()
 {
 
 }
+
+void TV_ScreenPresenter::onDeviceSelected(const DeviceEntry& device)
+{
+    model->setActiveDevice(device);
+}

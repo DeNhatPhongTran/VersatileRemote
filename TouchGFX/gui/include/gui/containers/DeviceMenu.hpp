@@ -16,9 +16,18 @@ public:
 
     void setDevices(const DeviceEntry* devs, int count);
 
+    void setItemClickCallback(void (*handler)(void* context, int16_t itemIndex), void* context);
+
+    const DeviceEntry* getDeviceAt(int16_t index) const;
+
 protected:
     DeviceEntry cachedDevices[Model::MAX_DEVICES];
     int cachedDeviceCount;
+
+    void (*itemClickHandler)(void* context, int16_t itemIndex);
+    void* itemClickContext;
+
+    static void staticItemClickHandler(void* context, int16_t itemIndex);
 };
 
 #endif // DEVICEMENU_HPP

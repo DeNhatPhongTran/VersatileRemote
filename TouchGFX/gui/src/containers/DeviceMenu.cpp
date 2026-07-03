@@ -2,7 +2,9 @@
 #include <string.h>
 
 DeviceMenu::DeviceMenu() :
-    cachedDeviceCount(0)
+    cachedDeviceCount(0),
+    itemClickHandler(0),
+    itemClickContext(0)
 {
     memset(cachedDevices, 0, sizeof(cachedDevices));
 }
@@ -14,6 +16,9 @@ void DeviceMenu::initialize()
 
 void DeviceMenu::scrollList1UpdateItem(ButtonDevice& item, int16_t itemIndex)
 {
+    item.setItemIndex(itemIndex);
+    item.setClickHandler(DeviceMenu::staticItemClickHandler, this);
+
     if (itemIndex >= 0 && itemIndex < cachedDeviceCount)
     {
         item.setText(cachedDevices[itemIndex].name);
@@ -34,4 +39,28 @@ void DeviceMenu::setDevices(const DeviceEntry* devs, int count)
 
     scrollList1.setNumberOfItems(cachedDeviceCount);
     scrollList1.invalidate();
+}
+
+void DeviceMenu::setItemClickCallback(void (*handler)(void* context, int16_t itemIndex), void* context)
+{
+    itemClickHandler = handler;
+    itemClickContext = context;
+}
+
+const DeviceEntry* DeviceMenu::getDeviceAt(int16_t index) const
+{
+    if (index >= 0 && index < cachedDeviceCount)
+    {
+        return &cachedDevices[index];
+    }
+    return 0;
+}
+
+void DeviceMenu::staticItemClickHandler(void* context, int16_t itemIndex)
+{
+    DeviceMenu* self = static_cast<DeviceMenu*>(context);
+    if (self->itemClickHandler)
+    {
+        self->itemClickHandler(self->itemClickContext, itemIndex);
+    }
 }

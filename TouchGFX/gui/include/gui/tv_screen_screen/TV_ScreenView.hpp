@@ -14,7 +14,10 @@ public:
     virtual void tearDownScreen();
 
     void updateDeviceList(const DeviceEntry* devs, int count);
+
 protected:
+    static void onDeviceMenuItemClick(void* context, int16_t itemIndex);
+    void handleDeviceSelected(int16_t itemIndex);
 };
 
 #endif // TV_SCREENVIEW_HPP

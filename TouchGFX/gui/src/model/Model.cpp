@@ -2,7 +2,7 @@
 #include <gui/model/ModelListener.hpp>
 #include <string.h>
 
-Model::Model() : modelListener(0), deviceCount(0), selectedDeviceType(DEVICE_TV)
+Model::Model() : modelListener(0), deviceCount(0), selectedDeviceType(DEVICE_TV), activeDeviceSet(false)
 {
 
 }
@@ -51,4 +51,28 @@ void Model::setSelectedDeviceType(DeviceType t)
 DeviceType Model::getSelectedDeviceType()
 {
     return selectedDeviceType;
+}
+
+void Model::setActiveDevice(const DeviceEntry& device)
+{
+    strncpy(activeDevice.name, device.name, sizeof(activeDevice.name) - 1);
+    activeDevice.name[sizeof(activeDevice.name) - 1] = '\0';
+    strncpy(activeDevice.signalId, device.signalId, sizeof(activeDevice.signalId) - 1);
+    activeDevice.signalId[sizeof(activeDevice.signalId) - 1] = '\0';
+    activeDevice.type = device.type;
+    activeDeviceSet = true;
+}
+
+const DeviceEntry* Model::getActiveDevice() const
+{
+    if (activeDeviceSet)
+    {
+        return &activeDevice;
+    }
+    return 0;
+}
+
+bool Model::hasActiveDevice() const
+{
+    return activeDeviceSet;
 }

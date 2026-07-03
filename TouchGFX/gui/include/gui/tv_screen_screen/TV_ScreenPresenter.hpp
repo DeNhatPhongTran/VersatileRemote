@@ -3,6 +3,7 @@
 
 #include <gui/model/ModelListener.hpp>
 #include <mvp/Presenter.hpp>
+#include <gui/model/Model.hpp>
 
 using namespace touchgfx;
 
@@ -15,6 +16,8 @@ public:
 
     virtual void activate();
     virtual void deactivate();
+
+    void onDeviceSelected(const DeviceEntry& device);
 
     virtual ~TV_ScreenPresenter() {}
 

@@ -3,6 +3,7 @@
 
 #include <gui/model/ModelListener.hpp>
 #include <mvp/Presenter.hpp>
+#include <gui/model/Model.hpp>
 
 using namespace touchgfx;
 
@@ -24,6 +25,8 @@ public:
      * (ie. made inactive). Teardown functionality can be placed here.
      */
     virtual void deactivate();
+
+    void onDeviceSelected(const DeviceEntry& device);
 
     virtual ~AC_ScreenPresenter() {}
 
