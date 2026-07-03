@@ -41,6 +41,22 @@ void Add_DeviceView::showDeviceType(DeviceType type)
     deviceName.invalidate();
 }
 
+void Add_DeviceView::navigateBack(DeviceType type)
+{
+    switch (type)
+    {
+        case DEVICE_TV:
+            application().gotoTV_ScreenScreenSlideTransitionWest();
+            break;
+        case DEVICE_AC:
+            application().gotoAC_ScreenScreenNoTransition();
+            break;
+        default:
+            application().gotoTV_ScreenScreenSlideTransitionWest();
+            break;
+    }
+}
+
 void Add_DeviceView::acceptButtonCallbackHandler(const touchgfx::AbstractButtonContainer& src)
 {
     if (&src == &button_accept)

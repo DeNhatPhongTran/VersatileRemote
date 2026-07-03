@@ -14,6 +14,7 @@ public:
     virtual void tearDownScreen();
 
     void showDeviceType(DeviceType type);
+    void navigateBack(DeviceType type);
 
 protected:
     touchgfx::Callback<Add_DeviceView, const touchgfx::AbstractButtonContainer&> acceptButtonCallback;

@@ -58,4 +58,6 @@ void Add_DevicePresenter::onConfirmAddDevice()
     }
 
     model->addDevice(name, "SIG_DEFAULT", type);
+
+    view.navigateBack(type);
 }
