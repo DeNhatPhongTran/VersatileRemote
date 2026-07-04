@@ -26,6 +26,9 @@
 /* USER CODE BEGIN Includes */
 #include "Components/ili9341/ili9341.h"
 #include <stdio.h>
+#include "ir_signal.h"
+#include "ir_protocols.h"
+#include "ir_device.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -94,6 +97,23 @@ const osThreadAttr_t GUI_Task_attributes = {
 /* USER CODE BEGIN PV */
 TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
+
+/* ---------------------------------------------------------------------------
+ * IR Capture State (written from ISR, read from task context)
+ * ---------------------------------------------------------------------------*/
+
+/** Working buffer for the frame currently being captured. */
+static volatile ir_signal_t  g_ir_capturing;
+
+/** Timestamp of the last captured edge (timer ticks = microseconds). */
+static volatile uint32_t     g_ir_last_tick = 0;
+
+/** Set to 1 by the capture ISR when a complete frame is ready for decode. */
+static volatile uint8_t      g_ir_frame_ready = 0;
+
+/** Snapshot of the completed frame (copied from g_ir_capturing on gap detect). */
+static ir_signal_t           g_ir_frame;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1002,27 +1022,56 @@ static void MX_TIM2_Init(void)
   }
 }
 
-/* Handle Callback TIM_IC_Capture */
-volatile uint32_t last_capture = 0;
-volatile uint32_t pulse_width = 0;
-volatile uint8_t edge_state = 0;
+/* ---------------------------------------------------------------------------
+ * IR Input Capture Callback
+ *
+ * Called on every edge of the IR receiver output (TIM2 CH1, BOTHEDGE mode).
+ * Computes the time since the previous edge to obtain mark/space widths in
+ * microseconds, then accumulates them into g_ir_capturing.
+ *
+ * A silence longer than IR_FRAME_GAP_US (15 ms) means the current frame has
+ * ended: the working buffer is copied to g_ir_frame and g_ir_frame_ready is
+ * set so the foreground task can decode it.
+ * ---------------------------------------------------------------------------*/
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim->Instance == TIM2 && htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+  if (htim->Instance != TIM2 || htim->Channel != HAL_TIM_ACTIVE_CHANNEL_1)
+    return;
+
+  uint32_t current_tick = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+
+  /* Compute elapsed time with 32-bit wrap-around handling */
+  uint32_t elapsed;
+  if (current_tick >= g_ir_last_tick)
   {
-    uint32_t current_capture = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+    elapsed = current_tick - g_ir_last_tick;
+  }
+  else
+  {
+    elapsed = (0xFFFFFFFFUL - g_ir_last_tick) + current_tick + 1UL;
+  }
+  g_ir_last_tick = current_tick;
 
-    if (current_capture >= last_capture)
+  /* Clamp to uint16_t range (max 65535 us); durations > IR_FRAME_GAP_US
+   * indicate an inter-frame silence – we use HAL_TIM_PeriodElapsedCallback
+   * via software polling in the task for reliable gap detection.            */
+  if (elapsed >= IR_FRAME_GAP_US)
+  {
+    /* Long gap: seal the current frame if it has data */
+    if (g_ir_capturing.raw_len > 0 && !g_ir_frame_ready)
     {
-      pulse_width = current_capture - last_capture;
+      /* Shallow copy (ir_signal_t is POD) */
+      g_ir_frame       = *(ir_signal_t *)&g_ir_capturing;
+      g_ir_frame_ready = 1;
     }
-    else
-    {
-      pulse_width = (0xFFFFFFFF - last_capture) + current_capture + 1;
-    }
-
-    last_capture = current_capture;
-    printf("Pulse: %lu us\r\n", (unsigned long)pulse_width);
+    /* Reset working buffer for next frame */
+    ir_signal_reset((ir_signal_t *)&g_ir_capturing);
+  }
+  else
+  {
+    /* Normal edge: append timing; cap at uint16_t max */
+    uint16_t t = (elapsed > 0xFFFFu) ? 0xFFFFu : (uint16_t)elapsed;
+    ir_signal_append_timing((ir_signal_t *)&g_ir_capturing, t);
   }
 }
 
@@ -1050,10 +1099,117 @@ PUTCHAR_PROTOTYPE
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-  /* Infinite loop */
+
+  /* =========================================================================
+   * Self-Test: NEC Decode and Re-Encode
+   *
+   * A hard-coded NEC raw timing sequence (address=0x04, command=0x08) is
+   * loaded into an ir_signal_t, decoded, and then re-encoded.  The test
+   * prints PASS/FAIL for each step via UART.
+   * =========================================================================*/
+  {
+    /* --- Step 1: build a reference NEC raw frame -------------------------
+     * NEC frame for addr=0x04 (00000100b), cmd=0x08 (00001000b)
+     * Layout: LEAD_MARK LEAD_SPACE [32 bits LSB-first] STOP_MARK
+     * Bit pattern (LSB first): 00100000 11011111 00010000 11101111
+     *   (addr=0x04, ~addr=0xFB, cmd=0x08, ~cmd=0xF7)
+     */
+    static const uint16_t nec_sample[] = {
+      9000, 4500,                                           /* Lead pulse     */
+      560,  560, 560,  560, 560, 1690, 560,  560,          /* addr  0x04 LSB */
+      560,  560, 560,  560, 560,  560, 560,  560,
+      560, 1690, 560, 1690, 560,  560, 560, 1690,          /* ~addr 0xFB     */
+      560, 1690, 560, 1690, 560, 1690, 560, 1690,
+      560,  560, 560,  560, 560,  560, 560, 1690,          /* cmd   0x08     */
+      560,  560, 560,  560, 560,  560, 560,  560,
+      560, 1690, 560, 1690, 560, 1690, 560,  560,          /* ~cmd  0xF7     */
+      560, 1690, 560, 1690, 560, 1690, 560, 1690,
+      560                                                   /* Stop mark      */
+    };
+    const uint16_t nec_sample_len = (uint16_t)(sizeof(nec_sample) / sizeof(nec_sample[0]));
+
+    static ir_signal_t test_sig;
+    ir_signal_reset(&test_sig);
+    for (uint16_t i = 0; i < nec_sample_len; i++) {
+      ir_signal_append_timing(&test_sig, nec_sample[i]);
+    }
+
+    /* --- Step 2: Decode --------------------------------------------------*/
+    int decode_ok = ir_decode(&test_sig);
+
+    printf("\r\n=== IR Self-Test ===\r\n");
+    if (decode_ok &&
+        test_sig.protocol == IR_PROTO_NEC &&
+        test_sig.address  == 0x04U &&
+        test_sig.command  == 0x08U)
+    {
+      printf("[PASS] NEC Decode: proto=%s addr=0x%02lX cmd=0x%02lX\r\n",
+             ir_protocol_name(test_sig.protocol),
+             (unsigned long)test_sig.address,
+             (unsigned long)test_sig.command);
+    }
+    else
+    {
+      printf("[FAIL] NEC Decode: proto=%s addr=0x%02lX cmd=0x%02lX\r\n",
+             ir_protocol_name(test_sig.protocol),
+             (unsigned long)test_sig.address,
+             (unsigned long)test_sig.command);
+    }
+
+    /* --- Step 3: Re-encode and verify length match -----------------------*/
+    static ir_signal_t encode_sig;
+    encode_sig.protocol = IR_PROTO_NEC;
+    encode_sig.address  = test_sig.address;
+    encode_sig.command  = test_sig.command;
+    encode_sig.bits     = 32;
+    encode_sig.raw_len  = 0;
+
+    int encode_ok = ir_encode(&encode_sig);
+
+    /* NEC encode must produce exactly 67 timings (2 lead + 64 bit + 1 stop) */
+    if (encode_ok && encode_sig.raw_len == 67)
+    {
+      printf("[PASS] NEC Encode: %u timings generated\r\n", encode_sig.raw_len);
+    }
+    else
+    {
+      printf("[FAIL] NEC Encode: ok=%d len=%u (expected 67)\r\n",
+             encode_ok, encode_sig.raw_len);
+    }
+
+    /* --- Step 4: Cross-check first few timings ---------------------------*/
+    uint8_t timing_ok = 1;
+    for (uint16_t i = 0; i < encode_sig.raw_len && i < (nec_sample_len - 1u); i++) {
+      if (!ir_timing_match(encode_sig.raw_timings[i], nec_sample[i])) {
+        timing_ok = 0;
+        printf("[FAIL] Timing mismatch at index %u: got=%u expected=%u\r\n",
+               i, encode_sig.raw_timings[i], nec_sample[i]);
+        break;
+      }
+    }
+    if (timing_ok) {
+      printf("[PASS] Timing cross-check passed\r\n");
+    }
+    printf("===================\r\n\r\n");
+  }
+
+  /* =========================================================================
+   * Main loop: poll g_ir_frame_ready and decode completed IR frames
+   * =========================================================================*/
   for(;;)
   {
-    osDelay(100);
+    if (g_ir_frame_ready)
+    {
+      /* Decode the captured frame (modifies g_ir_frame in place) */
+      ir_decode(&g_ir_frame);
+
+      printf("--- Captured Frame ---\r\n");
+      ir_signal_print(&g_ir_frame);
+
+      /* Clear flag (atomic on Cortex-M) */
+      g_ir_frame_ready = 0;
+    }
+    osDelay(10);
   }
   /* USER CODE END 5 */
 }
