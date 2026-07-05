@@ -10,6 +10,16 @@ public:
     virtual ~ButtonPower() {}
 
     virtual void initialize();
+
+    void setAction(touchgfx::GenericCallback<const touchgfx::AbstractButtonContainer&>& callback)
+    {
+        power.setAction(callback);
+    }
+
+    bool isPressed(const touchgfx::AbstractButtonContainer& src) const
+    {
+        return &src == &power;
+    }
 protected:
 };
 

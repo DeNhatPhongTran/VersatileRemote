@@ -54,3 +54,41 @@ void ir_signal_print(const ir_signal_t *sig)
         printf("\r\n");
     }
 }
+
+/* Include ir_protocols.h to call ir_encode */
+#include "ir_protocols.h"
+
+void ir_transmit(const ir_signal_t *sig)
+{
+    if (sig == NULL) return;
+
+    /* Make a copy to encode if needed without mutating the original */
+    ir_signal_t tx_sig = *sig;
+
+    if (tx_sig.protocol != IR_PROTO_RAW && tx_sig.protocol != IR_PROTO_UNKNOWN) {
+        /* Generate raw timings if they aren't generated yet */
+        if (tx_sig.raw_len == 0) {
+            ir_encode(&tx_sig);
+        }
+    }
+
+    printf("\r\n>>> TX START >>>\r\n");
+    printf("Tx Protocol : %s\r\n", ir_protocol_name(tx_sig.protocol));
+    if (tx_sig.protocol != IR_PROTO_RAW) {
+        printf("Tx Address  : 0x%08lX\r\n", (unsigned long)tx_sig.address);
+        printf("Tx Command  : 0x%08lX\r\n", (unsigned long)tx_sig.command);
+    }
+    printf("Tx Raw timings (%u pulses):\r\n", tx_sig.raw_len);
+    for (uint16_t i = 0; i < tx_sig.raw_len; i++) {
+        /* Print in pairs of Mark/Space for readability */
+        if (i % 2 == 0) {
+            printf("  M: %5u us | ", tx_sig.raw_timings[i]);
+        } else {
+            printf("S: %5u us\r\n", tx_sig.raw_timings[i]);
+        }
+    }
+    if (tx_sig.raw_len % 2 != 0) {
+        printf("\r\n");
+    }
+    printf("<<< TX COMPLETE <<<\r\n\r\n");
+}

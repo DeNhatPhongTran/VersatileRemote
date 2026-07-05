@@ -26,3 +26,8 @@ void TV_ScreenPresenter::onDeviceSelected(const DeviceEntry& device)
 {
     model->setActiveDevice(device);
 }
+
+void TV_ScreenPresenter::onButtonPressed(const char* buttonName)
+{
+    model->transmitActiveDeviceSignal(buttonName);
+}

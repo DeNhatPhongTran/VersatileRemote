@@ -31,7 +31,7 @@
 #define IR_MAX_NAME_LEN     32u
 
 /** Maximum number of buttons a single device can hold. */
-#define IR_MAX_BUTTONS      32u
+#define IR_MAX_BUTTONS      12u
 
 /** Maximum number of devices in the global device registry. */
 #define IR_MAX_DEVICES      8u
@@ -83,6 +83,16 @@ typedef struct {
 /* ---------------------------------------------------------------------------
  * Public API
  * ---------------------------------------------------------------------------*/
+
+/**
+ * @brief  Initialize a device structure with a name and type.
+ * @param  dev   Pointer to ir_device_t to initialize.
+ * @param  name  Human-readable device name string.
+ * @param  type  Device class (IR_DEV_TV, IR_DEV_AIR_CONDITIONER, etc.).
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief  Initialize a device structure with a name and type.
@@ -142,6 +152,14 @@ void ir_device_print(const ir_device_t *dev);
 int ir_registry_add(ir_device_t *dev);
 
 /**
+ * @brief  Allocate a static device slot from the registry pool.
+ * @param  name  Device name.
+ * @param  type  Device type.
+ * @retval Pointer to allocated ir_device_t, or NULL if pool is full.
+ */
+ir_device_t *ir_registry_allocate(const char *name, ir_device_type_t type);
+
+/**
  * @brief  Find a device in the registry by name.
  * @param  name  Device name to look up.
  * @retval Pointer to ir_device_t if found, NULL otherwise.
@@ -160,5 +178,9 @@ uint8_t ir_registry_count(void);
  * @retval Pointer to ir_device_t, or NULL if out of range.
  */
 ir_device_t *ir_registry_get(uint8_t index);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_IR_DEVICE_H_ */

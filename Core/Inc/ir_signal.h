@@ -87,6 +87,10 @@ typedef struct {
  * Utility Declarations
  * ---------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief  Reset an ir_signal_t to a clean state (all zeros).
  * @param  sig  Pointer to the signal structure to reset.
@@ -113,5 +117,15 @@ const char *ir_protocol_name(ir_protocol_t proto);
  * @param  sig  Pointer to the signal to print.
  */
 void ir_signal_print(const ir_signal_t *sig);
+
+/**
+ * @brief  Transmit the IR signal (modulated at appropriate frequency).
+ * @param  sig  Pointer to the signal to transmit.
+ */
+void ir_transmit(const ir_signal_t *sig);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_IR_SIGNAL_H_ */

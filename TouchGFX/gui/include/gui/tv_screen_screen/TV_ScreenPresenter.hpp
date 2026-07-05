@@ -18,6 +18,7 @@ public:
     virtual void deactivate();
 
     void onDeviceSelected(const DeviceEntry& device);
+    void onButtonPressed(const char* buttonName);
 
     virtual ~TV_ScreenPresenter() {}
 

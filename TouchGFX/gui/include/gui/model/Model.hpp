@@ -42,6 +42,8 @@ public:
     const DeviceEntry* getActiveDevice() const;
     bool hasActiveDevice() const;
 
+    void transmitActiveDeviceSignal(const char* buttonName);
+
 protected:
     ModelListener* modelListener;
     DeviceEntry devices[MAX_DEVICES];

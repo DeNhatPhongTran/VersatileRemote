@@ -84,7 +84,7 @@ SDRAM_HandleTypeDef hsdram1;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for GUI_Task */
@@ -1191,6 +1191,55 @@ void StartDefaultTask(void *argument)
       printf("[PASS] Timing cross-check passed\r\n");
     }
     printf("===================\r\n\r\n");
+
+    /* --- Pre-populate TV & AC devices in registry ------------------------ */
+    static ir_device_t mock_tv;
+    static ir_device_t mock_ac;
+
+    ir_device_init(&mock_tv, "device_TV_number_.1", IR_DEV_TV);
+    ir_device_init(&mock_ac, "device_AC_number_.1", IR_DEV_AIR_CONDITIONER);
+
+    /* Setup TV Signals */
+    ir_signal_t sig;
+    ir_signal_reset(&sig);
+    sig.protocol = IR_PROTO_NEC;
+    sig.address  = 0x01;
+    sig.bits     = 32;
+
+    sig.command  = 0x02; /* Power */
+    ir_device_add_button(&mock_tv, "POWER", &sig);
+    sig.command  = 0x03; /* Vol+ */
+    ir_device_add_button(&mock_tv, "VOL+", &sig);
+    sig.command  = 0x04; /* Vol- */
+    ir_device_add_button(&mock_tv, "VOL-", &sig);
+    sig.command  = 0x05; /* CH+ */
+    ir_device_add_button(&mock_tv, "CH+", &sig);
+    sig.command  = 0x06; /* CH- */
+    ir_device_add_button(&mock_tv, "CH-", &sig);
+
+    /* Setup AC Signals */
+    ir_signal_reset(&sig);
+    sig.protocol = IR_PROTO_NEC;
+    sig.address  = 0x10;
+    sig.bits     = 32;
+
+    sig.command  = 0x11; /* Power */
+    ir_device_add_button(&mock_ac, "POWER", &sig);
+    sig.command  = 0x12; /* Temp+ */
+    ir_device_add_button(&mock_ac, "TEMP+", &sig);
+    sig.command  = 0x13; /* Temp- */
+    ir_device_add_button(&mock_ac, "TEMP-", &sig);
+    sig.command  = 0x14; /* Fan+ */
+    ir_device_add_button(&mock_ac, "FAN+", &sig);
+    sig.command  = 0x15; /* Fan- */
+    ir_device_add_button(&mock_ac, "FAN-", &sig);
+
+    ir_registry_add(&mock_tv);
+    ir_registry_add(&mock_ac);
+
+    printf("Registry initialized with %u devices:\r\n", ir_registry_count());
+    ir_device_print(&mock_tv);
+    ir_device_print(&mock_ac);
   }
 
   /* =========================================================================

@@ -18,6 +18,9 @@ public:
 protected:
     static void onDeviceMenuItemClick(void* context, int16_t itemIndex);
     void handleDeviceSelected(int16_t itemIndex);
+
+    touchgfx::Callback<TV_ScreenView, const touchgfx::AbstractButtonContainer&> buttonClickedCallback;
+    void buttonClickedCallbackHandler(const touchgfx::AbstractButtonContainer& src);
 };
 
 #endif // TV_SCREENVIEW_HPP

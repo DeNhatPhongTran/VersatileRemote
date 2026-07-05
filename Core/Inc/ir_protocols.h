@@ -53,6 +53,10 @@
  * Public API
  * ---------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief  Attempt to decode raw timings in `sig` using all supported protocols.
  *
@@ -138,5 +142,9 @@ int ir_encode_rc5(ir_signal_t *sig);
  * @retval 1 if within IR_TOLERANCE_PERCENT, 0 otherwise.
  */
 int ir_timing_match(uint16_t measured, uint32_t expected);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_IR_PROTOCOLS_H_ */

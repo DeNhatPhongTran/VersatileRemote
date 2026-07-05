@@ -26,3 +26,8 @@ void AC_ScreenPresenter::onDeviceSelected(const DeviceEntry& device)
 {
     model->setActiveDevice(device);
 }
+
+void AC_ScreenPresenter::onButtonPressed(const char* buttonName)
+{
+    model->transmitActiveDeviceSignal(buttonName);
+}

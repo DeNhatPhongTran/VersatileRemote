@@ -9,8 +9,18 @@
 #include <string.h>
 #include <stdio.h>
 
+static ir_device_t  s_device_pool[IR_MAX_DEVICES];
 static ir_device_t *s_registry[IR_MAX_DEVICES];
 static uint8_t      s_registry_count = 0;
+
+ir_device_t *ir_registry_allocate(const char *name, ir_device_type_t type)
+{
+    if (s_registry_count >= IR_MAX_DEVICES) return NULL;
+    ir_device_t *dev = &s_device_pool[s_registry_count];
+    ir_device_init(dev, name, type);
+    s_registry[s_registry_count++] = dev;
+    return dev;
+}
 
 void ir_device_init(ir_device_t *dev, const char *name, ir_device_type_t type)
 {

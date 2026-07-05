@@ -17,6 +17,7 @@ public:
     virtual void deactivate();
 
     void onConfirmAddDevice();
+    DeviceType getSelectedDeviceType();
 
     virtual ~Add_DevicePresenter() {}
 

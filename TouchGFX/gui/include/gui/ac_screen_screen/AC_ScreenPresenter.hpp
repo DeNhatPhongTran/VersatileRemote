@@ -27,6 +27,7 @@ public:
     virtual void deactivate();
 
     void onDeviceSelected(const DeviceEntry& device);
+    void onButtonPressed(const char* buttonName);
 
     virtual ~AC_ScreenPresenter() {}
 
