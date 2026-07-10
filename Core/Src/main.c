@@ -1189,6 +1189,9 @@ void StartDefaultTask(void *argument)
     }
     if (timing_ok) {
       printf("[PASS] Timing cross-check passed\r\n");
+      /* Test physical transmission of the encoded signal */
+      printf("Testing physical transmission on PD12...\r\n");
+      ir_transmit(&encode_sig);
     }
     printf("===================\r\n\r\n");
 

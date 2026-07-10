@@ -6,6 +6,7 @@
  */
 
 #include "ir_signal.h"
+#include "main.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -58,6 +59,33 @@ void ir_signal_print(const ir_signal_t *sig)
 /* Include ir_protocols.h to call ir_encode */
 #include "ir_protocols.h"
 
+extern TIM_HandleTypeDef htim2;
+
+static void ir_tx_carrier(uint32_t duration_us)
+{
+    uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
+    uint32_t next_toggle = start + 13;
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+    uint8_t state = 1;
+    
+    while ((__HAL_TIM_GET_COUNTER(&htim2) - start) < duration_us) {
+        uint32_t current = __HAL_TIM_GET_COUNTER(&htim2);
+        if ((current - start) >= (next_toggle - start)) {
+            state = !state;
+            HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, state ? GPIO_PIN_SET : GPIO_PIN_RESET);
+            next_toggle += 13;
+        }
+    }
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+}
+
+static void ir_tx_space(uint32_t duration_us)
+{
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+    uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
+    while ((__HAL_TIM_GET_COUNTER(&htim2) - start) < duration_us);
+}
+
 void ir_transmit(const ir_signal_t *sig)
 {
     if (sig == NULL) return;
@@ -90,5 +118,19 @@ void ir_transmit(const ir_signal_t *sig)
     if (tx_sig.raw_len % 2 != 0) {
         printf("\r\n");
     }
+    
+    /* Hardware modulation execution */
+    __disable_irq();
+    for (uint16_t i = 0; i < tx_sig.raw_len; i++) {
+        uint32_t duration = tx_sig.raw_timings[i];
+        if (i % 2 == 0) {
+            ir_tx_carrier(duration);
+        } else {
+            ir_tx_space(duration);
+        }
+    }
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+    __enable_irq();
+
     printf("<<< TX COMPLETE <<<\r\n\r\n");
 }
