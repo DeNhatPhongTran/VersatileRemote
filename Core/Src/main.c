@@ -673,6 +673,17 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : Buzzer PE6 */
+  GPIO_InitStruct.Pin = Buzzer_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(Buzzer_GPIO_Port, &GPIO_InitStruct);
+
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -1182,6 +1193,20 @@ void StartDefaultTask(void *argument)
       /* Copy to GUI-accessible variables */
       g_gui_ir_frame = g_ir_frame;
       g_gui_ir_frame_ready = 1;
+
+      /* Success feedback: one short beep for a valid (non-glitch) frame.
+       * raw_len >= 10 mirrors the GUI noise filter (Model::tick). osDelay
+       * yields to the scheduler so the TouchGFX task keeps rendering. */
+      if (g_ir_frame.raw_len >= 10)
+      {
+        HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
+        osDelay(100);
+        HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+      }
+      else
+      {
+        printf("Main: Ignored short glitch frame (Len: %d)\r\n", g_ir_frame.raw_len);
+      }
 
       /* Clear flag (atomic on Cortex-M) */
       g_ir_frame_ready = 0;
