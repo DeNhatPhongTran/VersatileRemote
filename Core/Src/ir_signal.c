@@ -64,7 +64,9 @@ extern TIM_HandleTypeDef htim2;
 static void ir_tx_carrier(uint32_t duration_us)
 {
     uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
-    uint32_t next_toggle = start + 13;
+    /* Calibrated from 13 to 11 to compensate for instruction/register-reading overhead,
+     * ensuring actual hardware toggles occur at ~13us intervals (38.4kHz). */
+    uint32_t next_toggle = start + 11;
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
     uint8_t state = 1;
     
@@ -73,7 +75,7 @@ static void ir_tx_carrier(uint32_t duration_us)
         if ((current - start) >= (next_toggle - start)) {
             state = !state;
             HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, state ? GPIO_PIN_SET : GPIO_PIN_RESET);
-            next_toggle += 13;
+            next_toggle += 11;
         }
     }
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
@@ -120,17 +122,29 @@ void ir_transmit(const ir_signal_t *sig)
     }
     
     /* Hardware modulation execution */
-    __disable_irq();
-    for (uint16_t i = 0; i < tx_sig.raw_len; i++) {
-        uint32_t duration = tx_sig.raw_timings[i];
-        if (i % 2 == 0) {
-            ir_tx_carrier(duration);
-        } else {
-            ir_tx_space(duration);
+    uint8_t repeats = 1;
+    if (tx_sig.protocol == IR_PROTO_SONY12 || tx_sig.protocol == IR_PROTO_SONY15 || tx_sig.protocol == IR_PROTO_SONY20) {
+        repeats = 3;
+    }
+
+    for (uint8_t r = 0; r < repeats; r++) {
+        __disable_irq();
+        for (uint16_t i = 0; i < tx_sig.raw_len; i++) {
+            uint32_t duration = tx_sig.raw_timings[i];
+            if (i % 2 == 0) {
+                ir_tx_carrier(duration);
+            } else {
+                ir_tx_space(duration);
+            }
+        }
+        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+        __enable_irq();
+
+        if (r < repeats - 1) {
+            /* 45ms gap between Sony frames */
+            HAL_Delay(45);
         }
     }
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
-    __enable_irq();
 
     printf("<<< TX COMPLETE <<<\r\n\r\n");
 }

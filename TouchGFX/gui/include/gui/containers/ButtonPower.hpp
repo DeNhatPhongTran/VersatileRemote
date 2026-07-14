@@ -11,6 +11,8 @@ public:
 
     virtual void initialize();
 
+    void setUploadState(bool isUploading, bool isLearning);
+
     void setAction(touchgfx::GenericCallback<const touchgfx::AbstractButtonContainer&>& callback)
     {
         power.setAction(callback);
@@ -21,6 +23,7 @@ public:
         return &src == &power;
     }
 protected:
+    touchgfx::Box borderBox;
 };
 
 #endif // BUTTONPOWER_HPP

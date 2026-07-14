@@ -38,6 +38,16 @@ void ir_device_init(ir_device_t *dev, const char *name, ir_device_type_t type)
 int ir_device_add_button(ir_device_t *dev, const char *name, const ir_signal_t *signal)
 {
     if (dev == NULL || name == NULL || signal == NULL) return 0;
+
+    /* Check if the button name already exists to overwrite it */
+    for (uint8_t i = 0; i < dev->button_count; i++) {
+        if (strncmp(dev->buttons[i].name, name, IR_MAX_NAME_LEN) == 0) {
+            memcpy(&dev->buttons[i].signal, signal, sizeof(ir_signal_t));
+            printf("ir_device: Overwrote existing button '%s'\r\n", name);
+            return 1;
+        }
+    }
+
     if (dev->button_count >= IR_MAX_BUTTONS) return 0;
 
     ir_button_t *btn = &dev->buttons[dev->button_count];

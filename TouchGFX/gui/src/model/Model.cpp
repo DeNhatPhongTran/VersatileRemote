@@ -7,6 +7,12 @@
 #include "ir_device.h"
 #include "ir_signal.h"
 
+extern "C" {
+extern volatile uint8_t g_gui_ir_frame_ready;
+extern ir_signal_t g_gui_ir_frame;
+void ir_receive_flush(void);
+}
+
 static ir_device_type_t mapDeviceType(DeviceType type)
 {
     switch (type)
@@ -18,14 +24,120 @@ static ir_device_type_t mapDeviceType(DeviceType type)
     }
 }
 
-Model::Model() : modelListener(0), deviceCount(0), selectedDeviceType(DEVICE_TV), activeDeviceSet(false)
+Model::Model() : modelListener(0), deviceCount(0), selectedDeviceType(DEVICE_TV), activeDeviceSet(false), isUploading(false)
 {
-
+    learningButtonName[0] = '\0';
 }
 
 void Model::tick()
 {
+    if (isUploading && learningButtonName[0] != '\0')
+    {
+        if (g_gui_ir_frame_ready)
+        {
+            // Decoded frame is ready.
+            if (g_gui_ir_frame.protocol != IR_PROTO_UNKNOWN)
+            {
+                /* Filter out noise/glitches (valid remote controls send at least 10 pulse transitions) */
+                if (g_gui_ir_frame.raw_len < 10)
+                {
+                    printf("Model: Ignored noise/glitch frame (Len: %d < 10 transitions)\r\n", g_gui_ir_frame.raw_len);
+                    g_gui_ir_frame_ready = 0; // Clear flag and continue listening
+                    return;
+                }
 
+                // Find device in registry and update button signal
+                if (activeDeviceSet)
+                {
+                    ir_device_t* dev = ir_registry_find(activeDevice.name);
+                    if (dev)
+                    {
+                        // Add button (or update if exists)
+                        ir_device_add_button(dev, learningButtonName, &g_gui_ir_frame);
+                        printf("Model: SUCCESSFULLY LEARNED button '%s' on device '%s'\r\n", learningButtonName, dev->name);
+                        printf("  -> Protocol: %s, Address: 0x%04lX, Command: 0x%04lX, Bits: %d, Raw Len: %d\r\n",
+                               ir_protocol_name(g_gui_ir_frame.protocol),
+                               (unsigned long)g_gui_ir_frame.address,
+                               (unsigned long)g_gui_ir_frame.command,
+                               g_gui_ir_frame.bits,
+                               g_gui_ir_frame.raw_len);
+                    }
+                    else
+                    {
+                        printf("Model: ERROR - Active device '%s' not found in registry!\r\n", activeDevice.name);
+                    }
+                }
+                else
+                {
+                    printf("Model: ERROR - No active device selected! Cannot save learned signal.\r\n");
+                }
+            }
+            // Clear flag
+            g_gui_ir_frame_ready = 0;
+
+            // Transition this button back to waiting state
+            learningButtonName[0] = '\0';
+
+            // Notify listener
+            if (modelListener)
+            {
+                modelListener->uploadSignalStateChanged(isUploading, learningButtonName);
+            }
+        }
+    }
+}
+
+void Model::startUploadSignal()
+{
+    isUploading = true;
+    learningButtonName[0] = '\0';
+    printf("Model: Upload signal mode STARTED. Waiting for button selection...\r\n");
+    if (modelListener)
+    {
+        modelListener->uploadSignalStateChanged(isUploading, learningButtonName);
+    }
+}
+
+void Model::stopUploadSignal()
+{
+    if (isUploading)
+    {
+        isUploading = false;
+        learningButtonName[0] = '\0';
+        printf("Model: Upload signal mode STOPPED/CANCELLED.\r\n");
+        if (modelListener)
+        {
+            modelListener->uploadSignalStateChanged(isUploading, learningButtonName);
+        }
+    }
+}
+
+bool Model::isUploadMode() const
+{
+    return isUploading;
+}
+
+const char* Model::getLearningButton() const
+{
+    return learningButtonName;
+}
+
+void Model::handleButtonPressInUpload(const char* buttonName)
+{
+    if (!isUploading) return;
+
+    // Flush any pending old IR frames right when we start learning
+    ir_receive_flush();
+
+    // Set new learning button
+    strncpy(learningButtonName, buttonName, sizeof(learningButtonName) - 1);
+    learningButtonName[sizeof(learningButtonName) - 1] = '\0';
+    printf("Model: Button '%s' is registered to LEARN. Listening for IR signals...\r\n", buttonName);
+
+    if (modelListener)
+    {
+        modelListener->uploadSignalStateChanged(isUploading, learningButtonName);
+    }
 }
 
 int Model::getDevicesByType(DeviceType type, DeviceEntry* out, int maxOut)
@@ -127,10 +239,11 @@ void Model::transmitActiveDeviceSignal(const char* buttonName)
     ir_device_t* dev = ir_registry_find(activeDevice.name);
     if (dev)
     {
-    	printf("Button name: %s", buttonName);
+        printf("Model: Attempting transmit for button name: %s\r\n", buttonName);
         const ir_signal_t* sig = ir_device_get_signal(dev, buttonName);
         if (sig)
         {
+            printf("Model: Transmitting button %s on device %s (Protocol: %s, Command: 0x%02lX)\r\n", buttonName, dev->name, ir_protocol_name(sig->protocol), (unsigned long)sig->command);
             ir_transmit(sig);
         }
         else

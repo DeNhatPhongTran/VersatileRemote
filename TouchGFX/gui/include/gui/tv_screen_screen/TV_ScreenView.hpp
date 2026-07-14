@@ -14,6 +14,7 @@ public:
     virtual void tearDownScreen();
 
     void updateDeviceList(const DeviceEntry* devs, int count);
+    void setUploadSignalState(bool isUploading, const char* learningButton);
 
 protected:
     static void onDeviceMenuItemClick(void* context, int16_t itemIndex);

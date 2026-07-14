@@ -9,6 +9,7 @@
             "Name": "box2",
             "Width": 240,
             "Height": 320,
+            "LockPosition": true,
             "Color": {
               "Red": 255,
               "Green": 255,
@@ -29,6 +30,7 @@
                 "Y": 103,
                 "Width": 60,
                 "Height": 160,
+                "LockPosition": true,
                 "Components": [
                   {
                     "Type": "FlexButton",
@@ -308,6 +310,58 @@
                 "Width": 70,
                 "Height": 70,
                 "CustomContainerDefinitionName": "ButtonPower"
+              },
+              {
+                "Type": "FlexButton",
+                "Name": "upload_signal",
+                "X": 190,
+                "Y": 12,
+                "Width": 32,
+                "Height": 30,
+                "ButtonTrigger": {
+                  "Type": "ClickButtonTrigger"
+                },
+                "ButtonStyles": [
+                  {
+                    "Type": "TextButtonStyle",
+                    "Y": 5,
+                    "TextId": "__SingleUse_3Q9Q",
+                    "TextRotation": "0",
+                    "ColorReleased": {
+                      "Red": 255,
+                      "Green": 255,
+                      "Blue": 255
+                    },
+                    "ColorPressed": {
+                      "Red": 10,
+                      "Green": 10,
+                      "Blue": 10
+                    }
+                  },
+                  {
+                    "Type": "BoxWithBorderButtonStyle",
+                    "Width": 32,
+                    "Height": 30,
+                    "LockToFlexButtonSize": true,
+                    "ColorReleased": {
+                      "Green": 102,
+                      "Blue": 153
+                    },
+                    "ColorPressed": {
+                      "Green": 153,
+                      "Blue": 204
+                    },
+                    "ColorBorderReleased": {
+                      "Green": 51,
+                      "Blue": 102
+                    },
+                    "ColorBorderPressed": {
+                      "Red": 51,
+                      "Green": 102,
+                      "Blue": 153
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -316,6 +370,7 @@
             "Name": "header1",
             "Width": 240,
             "Height": 40,
+            "LockPosition": true,
             "CustomContainerDefinitionName": "Header"
           },
           {
@@ -323,6 +378,7 @@
             "Name": "device_menu",
             "Width": 240,
             "Height": 320,
+            "LockPosition": true,
             "CustomContainerDefinitionName": "DeviceMenu"
           }
         ],
@@ -789,6 +845,58 @@
                 "Width": 70,
                 "Height": 70,
                 "CustomContainerDefinitionName": "ButtonPower"
+              },
+              {
+                "Type": "FlexButton",
+                "Name": "upload_signal",
+                "X": 190,
+                "Y": 12,
+                "Width": 32,
+                "Height": 30,
+                "ButtonTrigger": {
+                  "Type": "ClickButtonTrigger"
+                },
+                "ButtonStyles": [
+                  {
+                    "Type": "TextButtonStyle",
+                    "Y": 5,
+                    "TextId": "__SingleUse_UDRE",
+                    "TextRotation": "0",
+                    "ColorReleased": {
+                      "Red": 255,
+                      "Green": 255,
+                      "Blue": 255
+                    },
+                    "ColorPressed": {
+                      "Red": 10,
+                      "Green": 10,
+                      "Blue": 10
+                    }
+                  },
+                  {
+                    "Type": "BoxWithBorderButtonStyle",
+                    "Width": 32,
+                    "Height": 30,
+                    "LockToFlexButtonSize": true,
+                    "ColorReleased": {
+                      "Green": 102,
+                      "Blue": 153
+                    },
+                    "ColorPressed": {
+                      "Green": 153,
+                      "Blue": 204
+                    },
+                    "ColorBorderReleased": {
+                      "Green": 51,
+                      "Blue": 102
+                    },
+                    "ColorBorderPressed": {
+                      "Red": 51,
+                      "Green": 102,
+                      "Blue": 153
+                    }
+                  }
+                ]
               }
             ]
           },

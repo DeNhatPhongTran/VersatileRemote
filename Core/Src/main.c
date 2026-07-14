@@ -114,6 +114,10 @@ static volatile uint8_t      g_ir_frame_ready = 0;
 /** Snapshot of the completed frame (copied from g_ir_capturing on gap detect). */
 static ir_signal_t           g_ir_frame;
 
+/* Exported variables for GUI */
+volatile uint8_t      g_gui_ir_frame_ready = 0;
+ir_signal_t           g_gui_ir_frame;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1087,6 +1091,17 @@ PUTCHAR_PROTOTYPE
   HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 10);
   return ch;
 }
+
+void ir_receive_flush(void)
+{
+  __disable_irq();
+  g_ir_frame_ready = 0;
+  g_gui_ir_frame_ready = 0;
+  ir_signal_reset((ir_signal_t *)&g_ir_capturing);
+  ir_signal_reset(&g_ir_frame);
+  ir_signal_reset(&g_gui_ir_frame);
+  __enable_irq();
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1100,101 +1115,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
 
-  /* =========================================================================
-   * Self-Test: NEC Decode and Re-Encode
-   *
-   * A hard-coded NEC raw timing sequence (address=0x04, command=0x08) is
-   * loaded into an ir_signal_t, decoded, and then re-encoded.  The test
-   * prints PASS/FAIL for each step via UART.
-   * =========================================================================*/
   {
-    /* --- Step 1: build a reference NEC raw frame -------------------------
-     * NEC frame for addr=0x04 (00000100b), cmd=0x08 (00001000b)
-     * Layout: LEAD_MARK LEAD_SPACE [32 bits LSB-first] STOP_MARK
-     * Bit pattern (LSB first): 00100000 11011111 00010000 11101111
-     *   (addr=0x04, ~addr=0xFB, cmd=0x08, ~cmd=0xF7)
-     */
-    static const uint16_t nec_sample[] = {
-      9000, 4500,                                           /* Lead pulse     */
-      560,  560, 560,  560, 560, 1690, 560,  560,          /* addr  0x04 LSB */
-      560,  560, 560,  560, 560,  560, 560,  560,
-      560, 1690, 560, 1690, 560,  560, 560, 1690,          /* ~addr 0xFB     */
-      560, 1690, 560, 1690, 560, 1690, 560, 1690,
-      560,  560, 560,  560, 560,  560, 560, 1690,          /* cmd   0x08     */
-      560,  560, 560,  560, 560,  560, 560,  560,
-      560, 1690, 560, 1690, 560, 1690, 560,  560,          /* ~cmd  0xF7     */
-      560, 1690, 560, 1690, 560, 1690, 560, 1690,
-      560                                                   /* Stop mark      */
-    };
-    const uint16_t nec_sample_len = (uint16_t)(sizeof(nec_sample) / sizeof(nec_sample[0]));
-
-    static ir_signal_t test_sig;
-    ir_signal_reset(&test_sig);
-    for (uint16_t i = 0; i < nec_sample_len; i++) {
-      ir_signal_append_timing(&test_sig, nec_sample[i]);
-    }
-
-    /* --- Step 2: Decode --------------------------------------------------*/
-    int decode_ok = ir_decode(&test_sig);
-
-    printf("\r\n=== IR Self-Test ===\r\n");
-    if (decode_ok &&
-        test_sig.protocol == IR_PROTO_NEC &&
-        test_sig.address  == 0x04U &&
-        test_sig.command  == 0x08U)
-    {
-      printf("[PASS] NEC Decode: proto=%s addr=0x%02lX cmd=0x%02lX\r\n",
-             ir_protocol_name(test_sig.protocol),
-             (unsigned long)test_sig.address,
-             (unsigned long)test_sig.command);
-    }
-    else
-    {
-      printf("[FAIL] NEC Decode: proto=%s addr=0x%02lX cmd=0x%02lX\r\n",
-             ir_protocol_name(test_sig.protocol),
-             (unsigned long)test_sig.address,
-             (unsigned long)test_sig.command);
-    }
-
-    /* --- Step 3: Re-encode and verify length match -----------------------*/
-    static ir_signal_t encode_sig;
-    encode_sig.protocol = IR_PROTO_NEC;
-    encode_sig.address  = test_sig.address;
-    encode_sig.command  = test_sig.command;
-    encode_sig.bits     = 32;
-    encode_sig.raw_len  = 0;
-
-    int encode_ok = ir_encode(&encode_sig);
-
-    /* NEC encode must produce exactly 67 timings (2 lead + 64 bit + 1 stop) */
-    if (encode_ok && encode_sig.raw_len == 67)
-    {
-      printf("[PASS] NEC Encode: %u timings generated\r\n", encode_sig.raw_len);
-    }
-    else
-    {
-      printf("[FAIL] NEC Encode: ok=%d len=%u (expected 67)\r\n",
-             encode_ok, encode_sig.raw_len);
-    }
-
-    /* --- Step 4: Cross-check first few timings ---------------------------*/
-    uint8_t timing_ok = 1;
-    for (uint16_t i = 0; i < encode_sig.raw_len && i < (nec_sample_len - 1u); i++) {
-      if (!ir_timing_match(encode_sig.raw_timings[i], nec_sample[i])) {
-        timing_ok = 0;
-        printf("[FAIL] Timing mismatch at index %u: got=%u expected=%u\r\n",
-               i, encode_sig.raw_timings[i], nec_sample[i]);
-        break;
-      }
-    }
-    if (timing_ok) {
-      printf("[PASS] Timing cross-check passed\r\n");
-      /* Test physical transmission of the encoded signal */
-      printf("Testing physical transmission on PD12...\r\n");
-      ir_transmit(&encode_sig);
-    }
-    printf("===================\r\n\r\n");
-
     /* --- Pre-populate TV & AC devices in registry ------------------------ */
     static ir_device_t mock_tv;
     static ir_device_t mock_ac;
@@ -1257,6 +1178,10 @@ void StartDefaultTask(void *argument)
 
       printf("--- Captured Frame ---\r\n");
       ir_signal_print(&g_ir_frame);
+
+      /* Copy to GUI-accessible variables */
+      g_gui_ir_frame = g_ir_frame;
+      g_gui_ir_frame_ready = 1;
 
       /* Clear flag (atomic on Cortex-M) */
       g_ir_frame_ready = 0;
