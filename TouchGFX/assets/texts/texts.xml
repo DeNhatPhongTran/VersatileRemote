@@ -6,6 +6,12 @@
   <Texts>
     <TextGroup Id="Group1" />
     <TextGroup Id="Unsorted">
+      <Text Id="__SingleUse_UDRE" Alignment="Center" TypographyId="custom_1">
+        <Translation Language="GB">upload&#10;signal</Translation>
+      </Text>
+      <Text Id="__SingleUse_3Q9Q" Alignment="Center" TypographyId="custom_1">
+        <Translation Language="GB">upload&#10;signal</Translation>
+      </Text>
       <Text Id="__SingleUse_U9LP" Alignment="Left" TypographyId="Default">
         <Translation Language="GB">Signal_ID</Translation>
       </Text>
@@ -34,5 +40,6 @@
     <Typography Id="Large" Font="verdana.ttf" Size="40" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
     <Typography Id="Small" Font="verdana.ttf" Size="10" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
     <Typography Id="NarrowSpace" Font="verdana.ttf" Size="29" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WidgetWildcardCharacters="0123456789." />
+    <Typography Id="custom_1" Font="verdana.ttf" Size="8" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
   </Typographies>
 </TextDatabase>

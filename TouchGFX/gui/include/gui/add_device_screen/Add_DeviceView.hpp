@@ -20,6 +20,9 @@ protected:
     touchgfx::Callback<Add_DeviceView, const touchgfx::AbstractButtonContainer&> acceptButtonCallback;
     void acceptButtonCallbackHandler(const touchgfx::AbstractButtonContainer& src);
 
+    touchgfx::Callback<Add_DeviceView, const touchgfx::AbstractButtonContainer&> cancelButtonCallback;
+    void cancelButtonCallbackHandler(const touchgfx::AbstractButtonContainer& src);
+
     touchgfx::Unicode::UnicodeChar typeNameBuffer[32];
 };
 

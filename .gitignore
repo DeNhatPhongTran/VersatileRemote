@@ -34,3 +34,7 @@ Release/
 
 # Loại bỏ các file log tạm thời của trình biên dịch Ruby/Make
 *.log
+
+# RTK configurations and instructions
+.rtk/
+CLAUDE.md

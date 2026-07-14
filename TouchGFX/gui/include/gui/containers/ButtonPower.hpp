@@ -10,7 +10,20 @@ public:
     virtual ~ButtonPower() {}
 
     virtual void initialize();
+
+    void setUploadState(bool isUploading, bool isLearning);
+
+    void setAction(touchgfx::GenericCallback<const touchgfx::AbstractButtonContainer&>& callback)
+    {
+        power.setAction(callback);
+    }
+
+    bool isPressed(const touchgfx::AbstractButtonContainer& src) const
+    {
+        return &src == &power;
+    }
 protected:
+    touchgfx::Box borderBox;
 };
 
 #endif // BUTTONPOWER_HPP

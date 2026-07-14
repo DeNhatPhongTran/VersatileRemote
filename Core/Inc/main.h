@@ -32,7 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ir_signal.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -54,7 +54,9 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+extern volatile uint8_t g_gui_ir_frame_ready;
+extern ir_signal_t g_gui_ir_frame;
+void ir_receive_flush(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

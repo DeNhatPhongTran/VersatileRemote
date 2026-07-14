@@ -10,6 +10,8 @@ public:
     
     virtual ~ModelListener() {}
 
+    virtual void uploadSignalStateChanged(bool isUploading, const char* learningButton) {}
+
     void bind(Model* m)
     {
         model = m;

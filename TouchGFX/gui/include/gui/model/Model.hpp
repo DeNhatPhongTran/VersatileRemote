@@ -42,6 +42,14 @@ public:
     const DeviceEntry* getActiveDevice() const;
     bool hasActiveDevice() const;
 
+    void transmitActiveDeviceSignal(const char* buttonName);
+
+    void startUploadSignal();
+    void stopUploadSignal();
+    bool isUploadMode() const;
+    const char* getLearningButton() const;
+    void handleButtonPressInUpload(const char* buttonName);
+
 protected:
     ModelListener* modelListener;
     DeviceEntry devices[MAX_DEVICES];
@@ -49,6 +57,9 @@ protected:
     DeviceType selectedDeviceType;
     DeviceEntry activeDevice;
     bool activeDeviceSet;
+
+    bool isUploading;
+    char learningButtonName[32];
 };
 
 #endif // MODEL_HPP

@@ -18,6 +18,10 @@ public:
     virtual void deactivate();
 
     void onDeviceSelected(const DeviceEntry& device);
+    void onButtonPressed(const char* buttonName);
+    void onUploadSignalPressed();
+
+    virtual void uploadSignalStateChanged(bool isUploading, const char* learningButton);
 
     virtual ~TV_ScreenPresenter() {}
 

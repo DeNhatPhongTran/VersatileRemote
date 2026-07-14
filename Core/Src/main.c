@@ -25,6 +25,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Components/ili9341/ili9341.h"
+#include <stdio.h>
+#include "ir_signal.h"
+#include "ir_protocols.h"
+#include "ir_device.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,13 +76,15 @@ LTDC_HandleTypeDef hltdc;
 
 SPI_HandleTypeDef hspi5;
 
+UART_HandleTypeDef huart1;
+
 SDRAM_HandleTypeDef hsdram1;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for GUI_Task */
@@ -89,6 +95,28 @@ const osThreadAttr_t GUI_Task_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
+TIM_HandleTypeDef htim2;
+UART_HandleTypeDef huart1;
+
+/* ---------------------------------------------------------------------------
+ * IR Capture State (written from ISR, read from task context)
+ * ---------------------------------------------------------------------------*/
+
+/** Working buffer for the frame currently being captured. */
+static volatile ir_signal_t  g_ir_capturing;
+
+/** Timestamp of the last captured edge (timer ticks = microseconds). */
+static volatile uint32_t     g_ir_last_tick = 0;
+
+/** Set to 1 by the capture ISR when a complete frame is ready for decode. */
+static volatile uint8_t      g_ir_frame_ready = 0;
+
+/** Snapshot of the completed frame (copied from g_ir_capturing on gap detect). */
+static ir_signal_t           g_ir_frame;
+
+/* Exported variables for GUI */
+volatile uint8_t      g_gui_ir_frame_ready = 0;
+ir_signal_t           g_gui_ir_frame;
 
 /* USER CODE END PV */
 
@@ -101,12 +129,13 @@ static void MX_SPI5_Init(void);
 static void MX_FMC_Init(void);
 static void MX_LTDC_Init(void);
 static void MX_DMA2D_Init(void);
+static void MX_USART1_UART_Init(void);
 void StartDefaultTask(void *argument);
 extern void TouchGFX_Task(void *argument);
 
 /* USER CODE BEGIN PFP */
 static void BSP_SDRAM_Initialization_Sequence(SDRAM_HandleTypeDef *hsdram, FMC_SDRAM_CommandTypeDef *Command);
-
+static void MX_TIM2_Init(void);
 
 
 static uint8_t            I2C3_ReadData(uint8_t Addr, uint8_t Reg);
@@ -178,10 +207,13 @@ int main(void)
   MX_FMC_Init();
   MX_LTDC_Init();
   MX_DMA2D_Init();
+  MX_USART1_UART_Init();
   MX_TouchGFX_Init();
   /* Call PreOsInit function */
   MX_TouchGFX_PreOSInit();
   /* USER CODE BEGIN 2 */
+  MX_TIM2_Init();
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
 
@@ -502,6 +534,39 @@ static void MX_SPI5_Init(void)
 
 
   /* USER CODE END SPI5_Init 2 */
+
+}
+
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
 
 }
 
@@ -935,6 +1000,108 @@ void LCD_Delay(uint32_t Delay)
   HAL_Delay(Delay);
 }
 
+/* TIM2 Configuration */
+static void MX_TIM2_Init(void)
+{
+  TIM_IC_InitTypeDef sConfigIC = {0};
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 89;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 0xFFFFFFFF;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_IC_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /*  Input Capture Configuration */
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_BOTHEDGE;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 4;
+  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * IR Input Capture Callback
+ *
+ * Called on every edge of the IR receiver output (TIM2 CH1, BOTHEDGE mode).
+ * Computes the time since the previous edge to obtain mark/space widths in
+ * microseconds, then accumulates them into g_ir_capturing.
+ *
+ * A silence longer than IR_FRAME_GAP_US (15 ms) means the current frame has
+ * ended: the working buffer is copied to g_ir_frame and g_ir_frame_ready is
+ * set so the foreground task can decode it.
+ * ---------------------------------------------------------------------------*/
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance != TIM2 || htim->Channel != HAL_TIM_ACTIVE_CHANNEL_1)
+    return;
+
+  uint32_t current_tick = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+
+  /* Compute elapsed time with 32-bit wrap-around handling */
+  uint32_t elapsed;
+  if (current_tick >= g_ir_last_tick)
+  {
+    elapsed = current_tick - g_ir_last_tick;
+  }
+  else
+  {
+    elapsed = (0xFFFFFFFFUL - g_ir_last_tick) + current_tick + 1UL;
+  }
+  g_ir_last_tick = current_tick;
+
+  /* Clamp to uint16_t range (max 65535 us); durations > IR_FRAME_GAP_US
+   * indicate an inter-frame silence – we use HAL_TIM_PeriodElapsedCallback
+   * via software polling in the task for reliable gap detection.            */
+  if (elapsed >= IR_FRAME_GAP_US)
+  {
+    /* Long gap: seal the current frame if it has data */
+    if (g_ir_capturing.raw_len > 0 && !g_ir_frame_ready)
+    {
+      /* Shallow copy (ir_signal_t is POD) */
+      g_ir_frame       = *(ir_signal_t *)&g_ir_capturing;
+      g_ir_frame_ready = 1;
+    }
+    /* Reset working buffer for next frame */
+    ir_signal_reset((ir_signal_t *)&g_ir_capturing);
+  }
+  else
+  {
+    /* Normal edge: append timing; cap at uint16_t max */
+    uint16_t t = (elapsed > 0xFFFFu) ? 0xFFFFu : (uint16_t)elapsed;
+    ir_signal_append_timing((ir_signal_t *)&g_ir_capturing, t);
+  }
+}
+
+#ifdef __GNUC__
+/* For GCC/STM32CubeIDE, redirect __io_putchar to UART */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+
+PUTCHAR_PROTOTYPE
+{
+  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 10);
+  return ch;
+}
+
+void ir_receive_flush(void)
+{
+  __disable_irq();
+  g_ir_frame_ready = 0;
+  g_gui_ir_frame_ready = 0;
+  ir_signal_reset((ir_signal_t *)&g_ir_capturing);
+  ir_signal_reset(&g_ir_frame);
+  ir_signal_reset(&g_gui_ir_frame);
+  __enable_irq();
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -947,10 +1114,79 @@ void LCD_Delay(uint32_t Delay)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-  /* Infinite loop */
+
+  {
+    /* --- Pre-populate TV & AC devices in registry ------------------------ */
+    static ir_device_t mock_tv;
+    static ir_device_t mock_ac;
+
+    ir_device_init(&mock_tv, "device_TV_number_.1", IR_DEV_TV);
+    ir_device_init(&mock_ac, "device_AC_number_.1", IR_DEV_AIR_CONDITIONER);
+
+    /* Setup TV Signals */
+    ir_signal_t sig;
+    ir_signal_reset(&sig);
+    sig.protocol = IR_PROTO_NEC;
+    sig.address  = 0x01;
+    sig.bits     = 32;
+
+    sig.command  = 0x02; /* Power */
+    ir_device_add_button(&mock_tv, "POWER", &sig);
+    sig.command  = 0x03; /* Vol+ */
+    ir_device_add_button(&mock_tv, "VOL+", &sig);
+    sig.command  = 0x04; /* Vol- */
+    ir_device_add_button(&mock_tv, "VOL-", &sig);
+    sig.command  = 0x05; /* CH+ */
+    ir_device_add_button(&mock_tv, "CH+", &sig);
+    sig.command  = 0x06; /* CH- */
+    ir_device_add_button(&mock_tv, "CH-", &sig);
+
+    /* Setup AC Signals */
+    ir_signal_reset(&sig);
+    sig.protocol = IR_PROTO_NEC;
+    sig.address  = 0x10;
+    sig.bits     = 32;
+
+    sig.command  = 0x11; /* Power */
+    ir_device_add_button(&mock_ac, "POWER", &sig);
+    sig.command  = 0x12; /* Temp+ */
+    ir_device_add_button(&mock_ac, "TEMP+", &sig);
+    sig.command  = 0x13; /* Temp- */
+    ir_device_add_button(&mock_ac, "TEMP-", &sig);
+    sig.command  = 0x14; /* Fan+ */
+    ir_device_add_button(&mock_ac, "FAN+", &sig);
+    sig.command  = 0x15; /* Fan- */
+    ir_device_add_button(&mock_ac, "FAN-", &sig);
+
+    ir_registry_add(&mock_tv);
+    ir_registry_add(&mock_ac);
+
+    printf("Registry initialized with %u devices:\r\n", ir_registry_count());
+    ir_device_print(&mock_tv);
+    ir_device_print(&mock_ac);
+  }
+
+  /* =========================================================================
+   * Main loop: poll g_ir_frame_ready and decode completed IR frames
+   * =========================================================================*/
   for(;;)
   {
-    osDelay(100);
+    if (g_ir_frame_ready)
+    {
+      /* Decode the captured frame (modifies g_ir_frame in place) */
+      ir_decode(&g_ir_frame);
+
+      printf("--- Captured Frame ---\r\n");
+      ir_signal_print(&g_ir_frame);
+
+      /* Copy to GUI-accessible variables */
+      g_gui_ir_frame = g_ir_frame;
+      g_gui_ir_frame_ready = 1;
+
+      /* Clear flag (atomic on Cortex-M) */
+      g_ir_frame_ready = 0;
+    }
+    osDelay(10);
   }
   /* USER CODE END 5 */
 }
