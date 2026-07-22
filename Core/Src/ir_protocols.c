@@ -127,14 +127,12 @@ int ir_decode_samsung(ir_signal_t *sig)
         }
     }
 
-    uint8_t addr     = (uint8_t)(data & 0xFF);
-    uint8_t addr_dup = (uint8_t)((data >> 8) & 0xFF);
+    uint16_t addr    = (uint16_t)(data & 0xFFFF);
     uint8_t cmd      = (uint8_t)((data >> 16) & 0xFF);
     uint8_t cmd_inv  = (uint8_t)((data >> 24) & 0xFF);
 
-    /* Samsung32 duplicates the address byte as-is (no inversion), but
-     * still inverts the command byte like standard NEC does. */
-    if (addr != addr_dup)       return 0;
+    /* Samsung32 uses a 16-bit address block (no inversion check required),
+     * but still inverts the command byte like standard NEC does. */
     if ((cmd ^ cmd_inv) != 0xFF) return 0;
 
     sig->protocol = IR_PROTO_SAMSUNG;
@@ -147,8 +145,8 @@ int ir_decode_samsung(ir_signal_t *sig)
 
 int ir_encode_samsung(ir_signal_t *sig)
 {
-    uint8_t addr = (uint8_t)(sig->address & 0xFF);
-    uint8_t cmd  = (uint8_t)(sig->command  & 0xFF);
+    uint16_t addr = (uint16_t)(sig->address & 0xFFFF);
+    uint8_t cmd   = (uint8_t)(sig->command  & 0xFF);
 
     sig->raw_len = 0;
 
@@ -157,7 +155,6 @@ int ir_encode_samsung(ir_signal_t *sig)
 
     uint8_t  cmd_inv = ~cmd;
     uint32_t data    = (uint32_t)addr |
-                       ((uint32_t)addr    << 8)  |
                        ((uint32_t)cmd     << 16) |
                        ((uint32_t)cmd_inv << 24);
 
