@@ -3,8 +3,8 @@
  * @file    ir_protocols.h
  * @brief   IR protocol decoder and encoder declarations.
  *
- * Supports NEC (standard + extended), Sony SIRC (12/15/20-bit), RC5, and
- * a raw fallback for unknown/AC protocols.
+ * Supports NEC (standard + extended), Samsung32, Sony SIRC (12/15/20-bit),
+ * RC5, and a raw fallback for unknown/AC protocols.
  *
  * Usage:
  *   1. Capture raw timings into an ir_signal_t via ir_signal_append_timing().
@@ -34,6 +34,19 @@
 #define NEC_BIT_MARK         560u   /*!< Mark for every bit                    */
 #define NEC_ONE_SPACE       1690u   /*!< Space for logic '1'                   */
 #define NEC_ZERO_SPACE       560u   /*!< Space for logic '0'                   */
+
+/* ---------------------------------------------------------------------------
+ * Samsung32 Protocol Timing Constants (us)
+ * NEC-derived bit timing (identical bit mark/one/zero to NEC), but with its
+ * own lead pulse and its own 32-bit data layout:
+ *   8-bit address, 8-bit address (duplicated, NOT inverted),
+ *   8-bit command, 8-bit command (inverted).
+ * ---------------------------------------------------------------------------*/
+#define SAMSUNG_LEAD_MARK    4500u   /*!< Leading mark (burst)                  */
+#define SAMSUNG_LEAD_SPACE   4500u   /*!< Leading space after burst              */
+#define SAMSUNG_BIT_MARK      560u   /*!< Mark for every bit (same as NEC)      */
+#define SAMSUNG_ONE_SPACE    1690u   /*!< Space for logic '1' (same as NEC)     */
+#define SAMSUNG_ZERO_SPACE    560u   /*!< Space for logic '0' (same as NEC)     */
 
 /* ---------------------------------------------------------------------------
  * Sony SIRC Protocol Timing Constants (us)
@@ -93,6 +106,13 @@ int ir_encode(ir_signal_t *sig);
 int ir_decode_nec(ir_signal_t *sig);
 
 /**
+ * @brief  Attempt Samsung32 protocol decode from raw timings.
+ * @param  sig  Pointer to signal with raw_timings filled.
+ * @retval 1 if Samsung32 frame detected and decoded, 0 otherwise.
+ */
+int ir_decode_samsung(ir_signal_t *sig);
+
+/**
  * @brief  Attempt Sony SIRC protocol decode from raw timings.
  * @param  sig  Pointer to signal with raw_timings filled.
  * @retval 1 if SIRC frame detected and decoded, 0 otherwise.
@@ -116,6 +136,13 @@ int ir_decode_rc5(ir_signal_t *sig);
  * @retval 1 on success.
  */
 int ir_encode_nec(ir_signal_t *sig);
+
+/**
+ * @brief  Encode a Samsung32 signal into raw_timings.
+ * @param  sig  Pointer to signal with protocol/address/command set.
+ * @retval 1 on success.
+ */
+int ir_encode_samsung(ir_signal_t *sig);
 
 /**
  * @brief  Encode a Sony SIRC signal into raw_timings.

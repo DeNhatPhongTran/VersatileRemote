@@ -3,8 +3,8 @@
  * @file    ir_signal.h
  * @brief   Core data structures for storing and representing infrared signals.
  *
- * Supports both protocol-decoded signals (NEC, Sony SIRC, RC5) and raw
- * pulse-timing signals (e.g. for Air Conditioners or unknown protocols).
+ * Supports both protocol-decoded signals (NEC, Samsung32, Sony SIRC, RC5) and
+ * raw pulse-timing signals (e.g. for Air Conditioners or unknown protocols).
  * All timing values are in microseconds (us).
  ******************************************************************************
  */
@@ -41,6 +41,7 @@
  * IR_PROTO_SONY15  : Sony SIRC 15-bit protocol.
  * IR_PROTO_SONY20  : Sony SIRC 20-bit protocol.
  * IR_PROTO_RC5     : Philips RC5 bi-phase Manchester protocol.
+ * IR_PROTO_SAMSUNG : Samsung32 protocol (NEC-derived timing, own 32-bit layout).
  * IR_PROTO_UNKNOWN : Not yet decoded.
  */
 typedef enum {
@@ -51,7 +52,10 @@ typedef enum {
     IR_PROTO_SONY12,
     IR_PROTO_SONY15,
     IR_PROTO_SONY20,
-    IR_PROTO_RC5
+    IR_PROTO_RC5,
+    IR_PROTO_SAMSUNG   /* Appended at the end so existing enum values (and any
+                         * device/button data already saved elsewhere) keep
+                         * their numeric value unchanged. */
 } ir_protocol_t;
 
 /* ---------------------------------------------------------------------------

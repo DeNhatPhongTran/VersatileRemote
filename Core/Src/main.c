@@ -1103,14 +1103,129 @@ void ir_receive_flush(void)
   __enable_irq();
 }
 /* USER CODE END 4 */
+/**
+ * @brief  Kiểm tra và nhận một frame từ remote Samsung.
+ *
+ * Hàm này:
+ *  1. Kiểm tra khoảng thời gian không có cạnh IR.
+ *  2. Nếu remote đã ngừng phát đủ IR_FRAME_GAP_US thì chốt frame.
+ *  3. Giải mã frame.
+ *  4. Chỉ trả về thành công nếu protocol là Samsung.
+ *
+ * @param  result Con trỏ nhận kết quả giải mã.
+ * @retval 1 nếu nhận được frame Samsung hợp lệ.
+ * @retval 0 nếu chưa có frame hoặc frame không phải Samsung.
+ */
+static uint8_t Samsung_IR_Receive(ir_signal_t *result)
+{
+    uint32_t current_tick;
+    uint32_t idle_time;
+    uint32_t primask;
+    uint8_t frame_available = 0;
 
+    if (result == NULL)
+    {
+        return 0;
+    }
+
+    /*
+     * Đọc timer hiện tại. TIM2 đang được cấu hình:
+     * Prescaler = 89 với timer clock 90 MHz
+     * => mỗi tick tương ứng khoảng 1 us.
+     */
+    current_tick = __HAL_TIM_GET_COUNTER(&htim2);
+
+    /*
+     * Phép trừ unsigned tự xử lý trường hợp timer tràn 32 bit.
+     */
+    idle_time = current_tick - g_ir_last_tick;
+
+    /*
+     * Nếu đã có đủ dữ liệu và không có cạnh mới trong một khoảng dài,
+     * coi như remote đã phát xong một frame.
+     */
+    if ((idle_time >= IR_FRAME_GAP_US) &&
+        (g_ir_capturing.raw_len >= 10u))
+    {
+        primask = __get_PRIMASK();
+        __disable_irq();
+
+        /*
+         * Kiểm tra lại trong critical section để tránh ISR thay đổi dữ liệu
+         * đúng lúc task đang copy.
+         */
+        current_tick = __HAL_TIM_GET_COUNTER(&htim2);
+        idle_time = current_tick - g_ir_last_tick;
+
+        if ((idle_time >= IR_FRAME_GAP_US) &&
+            (g_ir_capturing.raw_len >= 10u) &&
+            (!g_ir_frame_ready))
+        {
+            g_ir_frame = *(ir_signal_t *)&g_ir_capturing;
+            g_ir_frame_ready = 1u;
+
+            ir_signal_reset((ir_signal_t *)&g_ir_capturing);
+        }
+
+        if (!primask)
+        {
+            __enable_irq();
+        }
+    }
+
+    /*
+     * Lấy frame hoàn chỉnh từ vùng dùng chung.
+     */
+    primask = __get_PRIMASK();
+    __disable_irq();
+
+    if (g_ir_frame_ready)
+    {
+        *result = g_ir_frame;
+        g_ir_frame_ready = 0u;
+        frame_available = 1u;
+    }
+
+    if (!primask)
+    {
+        __enable_irq();
+    }
+
+    if (!frame_available)
+    {
+        return 0;
+    }
+
+    /*
+     * Tự động thử các decoder, trong đó có Samsung.
+     */
+    ir_decode(result);
+
+    if (result->protocol != IR_PROTO_SAMSUNG)
+    {
+        printf("IR received, but not Samsung\r\n");
+        ir_signal_print(result);
+        return 0;
+    }
+
+    printf("\r\n========== SAMSUNG REMOTE ==========\r\n");
+    printf("Protocol : SAMSUNG\r\n");
+    printf("Address  : 0x%04lX\r\n",
+           (unsigned long)result->address);
+    printf("Command  : 0x%04lX\r\n",
+           (unsigned long)result->command);
+    printf("Bits     : %u\r\n", result->bits);
+    printf("Raw len  : %u\r\n", result->raw_len);
+    printf("====================================\r\n");
+
+    return 1;
+}
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
@@ -1123,25 +1238,25 @@ void StartDefaultTask(void *argument)
     ir_device_init(&mock_tv, "device_TV_number_.1", IR_DEV_TV);
     ir_device_init(&mock_ac, "device_AC_number_.1", IR_DEV_AIR_CONDITIONER);
 
-    /* Setup TV Signals */
+    /* Setup TV Signals — Samsung TV (NOT NEC!) */
     ir_signal_t sig;
     ir_signal_reset(&sig);
-    sig.protocol = IR_PROTO_NEC;
-    sig.address  = 0x01;
+    sig.protocol = IR_PROTO_SAMSUNG;
+    sig.address  = 0x07;   /* mã address phổ biến của remote Samsung */
     sig.bits     = 32;
 
     sig.command  = 0x02; /* Power */
     ir_device_add_button(&mock_tv, "POWER", &sig);
-    sig.command  = 0x03; /* Vol+ */
+    sig.command  = 0x07; /* Vol+  */
     ir_device_add_button(&mock_tv, "VOL+", &sig);
-    sig.command  = 0x04; /* Vol- */
+    sig.command  = 0x0B; /* Vol-  */
     ir_device_add_button(&mock_tv, "VOL-", &sig);
-    sig.command  = 0x05; /* CH+ */
+    sig.command  = 0x12; /* CH+   */
     ir_device_add_button(&mock_tv, "CH+", &sig);
-    sig.command  = 0x06; /* CH- */
+    sig.command  = 0x10; /* CH-   */
     ir_device_add_button(&mock_tv, "CH-", &sig);
 
-    /* Setup AC Signals */
+    /* Setup AC Signals (giữ nguyên NEC vì AC vốn không phải Samsung TV) */
     ir_signal_reset(&sig);
     sig.protocol = IR_PROTO_NEC;
     sig.address  = 0x10;
@@ -1153,7 +1268,7 @@ void StartDefaultTask(void *argument)
     ir_device_add_button(&mock_ac, "TEMP+", &sig);
     sig.command  = 0x13; /* Temp- */
     ir_device_add_button(&mock_ac, "TEMP-", &sig);
-    sig.command  = 0x14; /* Fan+ */
+    sig.command  = 0x14; /* Fan+  */
     ir_device_add_button(&mock_ac, "FAN+", &sig);
     sig.command  = 0x15; /* Fan- */
     ir_device_add_button(&mock_ac, "FAN-", &sig);
@@ -1169,24 +1284,68 @@ void StartDefaultTask(void *argument)
   /* =========================================================================
    * Main loop: poll g_ir_frame_ready and decode completed IR frames
    * =========================================================================*/
-  for(;;)
+  // for (;;)
+  // {
+  //   if (g_ir_frame_ready)
+  //   {
+  //     /* Decode the captured frame (modifies g_ir_frame in place) */
+  //     ir_decode(&g_ir_frame);
+
+  //     printf("--- Captured Frame ---\r\n");
+  //     ir_signal_print(&g_ir_frame);
+
+  //     /* Copy to GUI-accessible variables */
+  //     g_gui_ir_frame = g_ir_frame;
+  //     g_gui_ir_frame_ready = 1;
+
+  //     /* Clear flag (atomic on Cortex-M) */
+  //     g_ir_frame_ready = 0;
+  //   }
+  //   osDelay(10);
+  // }
+  for (;;)
   {
-    if (g_ir_frame_ready)
-    {
-      /* Decode the captured frame (modifies g_ir_frame in place) */
-      ir_decode(&g_ir_frame);
+      uint32_t primask;
+      uint8_t available = 0;
+      ir_signal_t received;
 
-      printf("--- Captured Frame ---\r\n");
-      ir_signal_print(&g_ir_frame);
+      primask = __get_PRIMASK();
+      __disable_irq();
 
-      /* Copy to GUI-accessible variables */
-      g_gui_ir_frame = g_ir_frame;
-      g_gui_ir_frame_ready = 1;
+      if (g_ir_frame_ready)
+      {
+          received = g_ir_frame;
+          g_ir_frame_ready = 0;
+          available = 1;
+      }
 
-      /* Clear flag (atomic on Cortex-M) */
-      g_ir_frame_ready = 0;
-    }
-    osDelay(10);
+      if (!primask)
+      {
+          __enable_irq();
+      }
+
+      if (available)
+      {
+          printf("\r\nRAW BEFORE DECODE\r\n");
+          printf("Raw len: %u\r\n", received.raw_len);
+
+          for (uint16_t i = 0; i < received.raw_len; i++)
+          {
+              printf("%u ", received.raw_timings[i]);
+
+              if ((i + 1) % 8 == 0)
+                  printf("\r\n");
+          }
+
+          printf("\r\n");
+
+          ir_decode(&received);
+
+          printf("AFTER DECODE\r\n");
+          ir_signal_print(&received);
+      }
+
+      osDelay(5);
   }
   /* USER CODE END 5 */
 }
