@@ -1114,14 +1114,12 @@ void ir_receive_flush(void)
   __enable_irq();
 }
 /* USER CODE END 4 */
-
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
@@ -1134,25 +1132,25 @@ void StartDefaultTask(void *argument)
     ir_device_init(&mock_tv, "device_TV_number_.1", IR_DEV_TV);
     ir_device_init(&mock_ac, "device_AC_number_.1", IR_DEV_AIR_CONDITIONER);
 
-    /* Setup TV Signals */
+    /* Setup TV Signals — Samsung TV (NOT NEC!) */
     ir_signal_t sig;
     ir_signal_reset(&sig);
-    sig.protocol = IR_PROTO_NEC;
-    sig.address  = 0x01;
+    sig.protocol = IR_PROTO_SAMSUNG;
+    sig.address  = 0x0707;   /* mã address phổ biến của remote Samsung */
     sig.bits     = 32;
 
     sig.command  = 0x02; /* Power */
     ir_device_add_button(&mock_tv, "POWER", &sig);
-    sig.command  = 0x03; /* Vol+ */
+    sig.command  = 0x07; /* Vol+  */
     ir_device_add_button(&mock_tv, "VOL+", &sig);
-    sig.command  = 0x04; /* Vol- */
+    sig.command  = 0x0B; /* Vol-  */
     ir_device_add_button(&mock_tv, "VOL-", &sig);
-    sig.command  = 0x05; /* CH+ */
+    sig.command  = 0x12; /* CH+   */
     ir_device_add_button(&mock_tv, "CH+", &sig);
-    sig.command  = 0x06; /* CH- */
+    sig.command  = 0x10; /* CH-   */
     ir_device_add_button(&mock_tv, "CH-", &sig);
 
-    /* Setup AC Signals */
+    /* Setup AC Signals (giữ nguyên NEC vì AC vốn không phải Samsung TV) */
     ir_signal_reset(&sig);
     sig.protocol = IR_PROTO_NEC;
     sig.address  = 0x10;
@@ -1164,7 +1162,7 @@ void StartDefaultTask(void *argument)
     ir_device_add_button(&mock_ac, "TEMP+", &sig);
     sig.command  = 0x13; /* Temp- */
     ir_device_add_button(&mock_ac, "TEMP-", &sig);
-    sig.command  = 0x14; /* Fan+ */
+    sig.command  = 0x14; /* Fan+  */
     ir_device_add_button(&mock_ac, "FAN+", &sig);
     sig.command  = 0x15; /* Fan- */
     ir_device_add_button(&mock_ac, "FAN-", &sig);
@@ -1180,38 +1178,52 @@ void StartDefaultTask(void *argument)
   /* =========================================================================
    * Main loop: poll g_ir_frame_ready and decode completed IR frames
    * =========================================================================*/
-  for(;;)
+  for (;;)
   {
-    if (g_ir_frame_ready)
-    {
-      /* Decode the captured frame (modifies g_ir_frame in place) */
-      ir_decode(&g_ir_frame);
+      uint32_t primask;
+      uint8_t available = 0;
+      ir_signal_t received;
 
-      printf("--- Captured Frame ---\r\n");
-      ir_signal_print(&g_ir_frame);
+      primask = __get_PRIMASK();
+      __disable_irq();
 
-      /* Copy to GUI-accessible variables */
-      g_gui_ir_frame = g_ir_frame;
-      g_gui_ir_frame_ready = 1;
-
-      /* Success feedback: one short beep for a valid (non-glitch) frame.
-       * raw_len >= 10 mirrors the GUI noise filter (Model::tick). osDelay
-       * yields to the scheduler so the TouchGFX task keeps rendering. */
-      if (g_ir_frame.raw_len >= 10)
+      if (g_ir_frame_ready)
       {
-        HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
-        osDelay(100);
-        HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
-      }
-      else
-      {
-        printf("Main: Ignored short glitch frame (Len: %d)\r\n", g_ir_frame.raw_len);
+          received = g_ir_frame;
+          g_ir_frame_ready = 0;
+          available = 1;
       }
 
-      /* Clear flag (atomic on Cortex-M) */
-      g_ir_frame_ready = 0;
-    }
-    osDelay(10);
+      if (!primask)
+      {
+          __enable_irq();
+      }
+
+      if (available)
+      {
+          ir_decode(&received);
+
+          ir_signal_print(&received);
+
+          /* Success feedback: one short beep for a valid (non-glitch) frame.
+           * raw_len >= 10 mirrors the GUI noise filter (Model::tick). */
+          if (received.raw_len >= 10)
+          {
+              HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
+              osDelay(100);
+              HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+          }
+          else
+          {
+              printf("Main: Ignored short glitch frame (Len: %d)\r\n", received.raw_len);
+          }
+
+          /* Copy to GUI-accessible variables to enable learning */
+          g_gui_ir_frame = received;
+          g_gui_ir_frame_ready = 1;
+      }
+
+      osDelay(5);
   }
   /* USER CODE END 5 */
 }

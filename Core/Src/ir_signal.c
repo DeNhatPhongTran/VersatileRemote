@@ -26,14 +26,15 @@ int ir_signal_append_timing(ir_signal_t *sig, uint16_t timing)
 const char *ir_protocol_name(ir_protocol_t proto)
 {
     switch (proto) {
-        case IR_PROTO_NEC:     return "NEC";
-        case IR_PROTO_NEC_EXT: return "NEC_EXT";
-        case IR_PROTO_SONY12:  return "SONY_12";
-        case IR_PROTO_SONY15:  return "SONY_15";
-        case IR_PROTO_SONY20:  return "SONY_20";
-        case IR_PROTO_RC5:     return "RC5";
-        case IR_PROTO_RAW:     return "RAW";
-        default:               return "UNKNOWN";
+        case IR_PROTO_NEC:      return "NEC";
+        case IR_PROTO_NEC_EXT:  return "NEC_EXT";
+        case IR_PROTO_SAMSUNG:  return "SAMSUNG";
+        case IR_PROTO_SONY12:   return "SONY_12";
+        case IR_PROTO_SONY15:   return "SONY_15";
+        case IR_PROTO_SONY20:   return "SONY_20";
+        case IR_PROTO_RC5:      return "RC5";
+        case IR_PROTO_RAW:      return "RAW";
+        default:                return "UNKNOWN";
     }
 }
 

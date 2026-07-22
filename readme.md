@@ -49,6 +49,16 @@ Tài liệu này tổng hợp toàn bộ các tính năng lớn đã được ph
   - Thông số kỹ thuật của tín hiệu học thành công (Giao thức, Địa chỉ, Mã lệnh Command, Số bit, Độ dài chuỗi RAW).
   - Chi tiết quá trình phát lại tín hiệu (Phát lại nút nào, thiết bị nào, tần số/chu kỳ sóng mang và mảng xung nhịp chi tiết).
 
+## Cấu hình chân ngoại vi (Peripheral Pin Configuration)
+
+Để hệ thống hoạt động chính xác, các linh kiện ngoại vi thu/phát hồng ngoại cần được kết nối vào các chân GPIO của mạch STM32F429I_DISCO theo cấu hình dưới đây:
+
+| Linh kiện ngoại vi | Chân GPIO trên Board | Chức năng cấu hình trong vi điều khiển | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| **Mắt thu hồng ngoại (IR Receiver)** | **`PA5`** | `TIM2_CH1` (Input Capture mode) | Thu nhận xung và đo thời gian Mark/Space |
+| **Đầu phát hồng ngoại (IR Transmitter)** | **`PD12`** | `GPIO_MODE_OUTPUT_PP` (Push-Pull, High Speed) | Phát xung sóng mang 38kHz điều chế |
+| **Debug Console (UART)** | Cổng **`USART1`** | Baudrate `115200`, 8-N-1 | In thông tin chẩn đoán và log hệ thống |
+
 ---
 
 ## Hướng dẫn Kiểm thử (Testing Guide)
