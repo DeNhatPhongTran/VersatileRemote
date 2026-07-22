@@ -305,7 +305,7 @@
               {
                 "Type": "CustomContainerInstance",
                 "Name": "button_power",
-                "X": 100,
+                "X": 45,
                 "Y": 12,
                 "Width": 70,
                 "Height": 70,

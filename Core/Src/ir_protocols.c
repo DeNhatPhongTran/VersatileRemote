@@ -104,6 +104,74 @@ int ir_encode_nec(ir_signal_t *sig)
     return 1;
 }
 
+int ir_decode_samsung(ir_signal_t *sig)
+{
+    if (sig->raw_len < 66) return 0;
+
+    if (!ir_timing_match(sig->raw_timings[0], SAMSUNG_LEAD_MARK))  return 0;
+    if (!ir_timing_match(sig->raw_timings[1], SAMSUNG_LEAD_SPACE)) return 0;
+
+    uint32_t data = 0;
+    for (uint8_t i = 0; i < 32; i++) {
+        uint16_t mark  = sig->raw_timings[2 + i * 2];
+        uint16_t space = sig->raw_timings[3 + i * 2];
+
+        if (!ir_timing_match(mark, SAMSUNG_BIT_MARK)) return 0;
+
+        if (ir_timing_match(space, SAMSUNG_ONE_SPACE)) {
+            data |= (1UL << i);
+        } else if (ir_timing_match(space, SAMSUNG_ZERO_SPACE)) {
+            /* bit stays 0 */
+        } else {
+            return 0;
+        }
+    }
+
+    uint16_t addr    = (uint16_t)(data & 0xFFFF);
+    uint8_t cmd      = (uint8_t)((data >> 16) & 0xFF);
+    uint8_t cmd_inv  = (uint8_t)((data >> 24) & 0xFF);
+
+    /* Samsung32 uses a 16-bit address block (no inversion check required),
+     * but still inverts the command byte like standard NEC does. */
+    if ((cmd ^ cmd_inv) != 0xFF) return 0;
+
+    sig->protocol = IR_PROTO_SAMSUNG;
+    sig->address  = addr;
+    sig->command  = cmd;
+    sig->bits     = 32;
+
+    return 1;
+}
+
+int ir_encode_samsung(ir_signal_t *sig)
+{
+    uint16_t addr = (uint16_t)(sig->address & 0xFFFF);
+    uint8_t cmd   = (uint8_t)(sig->command  & 0xFF);
+
+    sig->raw_len = 0;
+
+    sig->raw_timings[sig->raw_len++] = (uint16_t)SAMSUNG_LEAD_MARK;
+    sig->raw_timings[sig->raw_len++] = (uint16_t)SAMSUNG_LEAD_SPACE;
+
+    uint8_t  cmd_inv = ~cmd;
+    uint32_t data    = (uint32_t)addr |
+                       ((uint32_t)cmd     << 16) |
+                       ((uint32_t)cmd_inv << 24);
+
+    for (uint8_t i = 0; i < 32; i++) {
+        sig->raw_timings[sig->raw_len++] = (uint16_t)SAMSUNG_BIT_MARK;
+        if ((data >> i) & 1u) {
+            sig->raw_timings[sig->raw_len++] = (uint16_t)SAMSUNG_ONE_SPACE;
+        } else {
+            sig->raw_timings[sig->raw_len++] = (uint16_t)SAMSUNG_ZERO_SPACE;
+        }
+    }
+
+    sig->raw_timings[sig->raw_len++] = (uint16_t)SAMSUNG_BIT_MARK;
+
+    return 1;
+}
+
 int ir_decode_sony(ir_signal_t *sig)
 {
     if (sig->raw_len < 25) return 0;
@@ -280,9 +348,10 @@ int ir_decode(ir_signal_t *sig)
 {
     if (sig == NULL || sig->raw_len == 0) return 0;
 
-    if (ir_decode_nec(sig))  return 1;
-    if (ir_decode_sony(sig)) return 1;
-    if (ir_decode_rc5(sig))  return 1;
+    if (ir_decode_nec(sig))     return 1;
+    if (ir_decode_samsung(sig)) return 1;
+    if (ir_decode_sony(sig))    return 1;
+    if (ir_decode_rc5(sig))     return 1;
 
     sig->protocol = IR_PROTO_RAW;
     return 0;
@@ -296,6 +365,8 @@ int ir_encode(ir_signal_t *sig)
         case IR_PROTO_NEC:
         case IR_PROTO_NEC_EXT:
             return ir_encode_nec(sig);
+        case IR_PROTO_SAMSUNG:
+            return ir_encode_samsung(sig);
         case IR_PROTO_SONY12:
         case IR_PROTO_SONY15:
         case IR_PROTO_SONY20:
