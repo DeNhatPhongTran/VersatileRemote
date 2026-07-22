@@ -10,6 +10,7 @@
 extern "C" {
 extern volatile uint8_t g_gui_ir_frame_ready;
 extern ir_signal_t g_gui_ir_frame;
+extern volatile uint8_t g_buzzer_beep_request;
 void ir_receive_flush(void);
 }
 
@@ -54,6 +55,7 @@ void Model::tick()
                     {
                         // Add button (or update if exists)
                         ir_device_add_button(dev, learningButtonName, &g_gui_ir_frame);
+                        g_buzzer_beep_request = 1; // Request buzzer beep feedback
                         printf("Model: SUCCESSFULLY LEARNED button '%s' on device '%s'\r\n", learningButtonName, dev->name);
                         printf("  -> Protocol: %s, Address: 0x%04lX, Command: 0x%04lX, Bits: %d, Raw Len: %d\r\n",
                                ir_protocol_name(g_gui_ir_frame.protocol),

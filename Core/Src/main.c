@@ -117,6 +117,7 @@ static ir_signal_t           g_ir_frame;
 /* Exported variables for GUI */
 volatile uint8_t      g_gui_ir_frame_ready = 0;
 ir_signal_t           g_gui_ir_frame;
+volatile uint8_t      g_buzzer_beep_request = 0;
 
 /* USER CODE END PV */
 
@@ -1205,22 +1206,25 @@ void StartDefaultTask(void *argument)
 
           ir_signal_print(&received);
 
-          /* Success feedback: one short beep for a valid (non-glitch) frame.
-           * raw_len >= 10 mirrors the GUI noise filter (Model::tick). */
+          /* Filter out noise/glitches (valid remote controls send at least 10 pulse transitions) */
           if (received.raw_len >= 10)
           {
-              HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
-              osDelay(100);
-              HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+              /* Copy to GUI-accessible variables to enable learning */
+              g_gui_ir_frame = received;
+              g_gui_ir_frame_ready = 1;
           }
           else
           {
               printf("Main: Ignored short glitch frame (Len: %d)\r\n", received.raw_len);
           }
+      }
 
-          /* Copy to GUI-accessible variables to enable learning */
-          g_gui_ir_frame = received;
-          g_gui_ir_frame_ready = 1;
+      if (g_buzzer_beep_request)
+      {
+          g_buzzer_beep_request = 0;
+          HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
+          osDelay(100);
+          HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
       }
 
       osDelay(5);

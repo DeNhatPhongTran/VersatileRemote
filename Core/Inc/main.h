@@ -56,6 +56,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 extern volatile uint8_t g_gui_ir_frame_ready;
 extern ir_signal_t g_gui_ir_frame;
+extern volatile uint8_t g_buzzer_beep_request;
 void ir_receive_flush(void);
 /* USER CODE END EFP */
 
