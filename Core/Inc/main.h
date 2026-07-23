@@ -56,6 +56,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 extern volatile uint8_t g_gui_ir_frame_ready;
 extern ir_signal_t g_gui_ir_frame;
+extern volatile uint8_t g_buzzer_beep_request;
 void ir_receive_flush(void);
 /* USER CODE END EFP */
 
@@ -70,7 +71,10 @@ void ir_receive_flush(void);
 #define MCU_ACTIVE_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
-
+/* Active buzzer for IR-learn success feedback. PE6 = free I/O on this board
+ * (P1.11); NOT PC9, which is I2C3_SDA for the STMPE811 touchscreen. */
+#define Buzzer_Pin GPIO_PIN_6
+#define Buzzer_GPIO_Port GPIOE
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

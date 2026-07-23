@@ -117,6 +117,7 @@ static ir_signal_t           g_ir_frame;
 /* Exported variables for GUI */
 volatile uint8_t      g_gui_ir_frame_ready = 0;
 ir_signal_t           g_gui_ir_frame;
+volatile uint8_t      g_buzzer_beep_request = 0;
 
 /* USER CODE END PV */
 
@@ -673,6 +674,17 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : Buzzer PE6 */
+  GPIO_InitStruct.Pin = Buzzer_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(Buzzer_GPIO_Port, &GPIO_InitStruct);
+
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -1190,27 +1202,29 @@ void StartDefaultTask(void *argument)
 
       if (available)
       {
-//          printf("\r\nRAW BEFORE DECODE\r\n");
-//          printf("Raw len: %u\r\n", received.raw_len);
-//
-//          for (uint16_t i = 0; i < received.raw_len; i++)
-//          {
-//              printf("%u ", received.raw_timings[i]);
-//
-//              if ((i + 1) % 8 == 0)
-//                  printf("\r\n");
-//          }
-//
-//          printf("\r\n");
-
           ir_decode(&received);
 
-//          printf("AFTER DECODE\r\n");
           ir_signal_print(&received);
 
-          /* Copy to GUI-accessible variables to enable learning */
-          g_gui_ir_frame = received;
-          g_gui_ir_frame_ready = 1;
+          /* Filter out noise/glitches (valid remote controls send at least 10 pulse transitions) */
+          if (received.raw_len >= 10)
+          {
+              /* Copy to GUI-accessible variables to enable learning */
+              g_gui_ir_frame = received;
+              g_gui_ir_frame_ready = 1;
+          }
+          else
+          {
+              printf("Main: Ignored short glitch frame (Len: %d)\r\n", received.raw_len);
+          }
+      }
+
+      if (g_buzzer_beep_request)
+      {
+          g_buzzer_beep_request = 0;
+          HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
+          osDelay(100);
+          HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
       }
 
       osDelay(5);
