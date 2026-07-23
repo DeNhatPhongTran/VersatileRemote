@@ -20,11 +20,11 @@
 
 Dự án này là hệ thống điều khiển từ xa vạn năng (Versatile Remote) chạy trên board mạch **STM32F429I_DISCO** kết hợp giao diện đồ họa **TouchGFX**. 
 
-Hệ thống hỗ trợ tính năng học lệnh (Learn) tín hiệu hồng ngoại (IR) từ các remote thực tế thông qua việc thu nhận, giải mã, đo đạc vi giây thời lượng sóng mang/khoảng lặng. Sau đó, hệ thống lưu trữ và phát lại (Playback) chính xác các tín hiệu này để điều khiển trực tiếp thiết bị thật (như TV, Điều hòa/AC). Dự án tập trung vào việc giải quyết các bài toán kỹ thuật thực tế trên vi điều khiển như tối ưu hóa bộ nhớ SRAM, sửa lỗi tràn ngăn xếp (Stack Overflow) của FreeRTOS, và cấu hình hiệu chuẩn phần mềm (Calibration) để phát sóng mang tần số chuẩn 38.4 kHz.
+Hệ thống hỗ trợ tính năng học lệnh tín hiệu hồng ngoại (IR) từ các remote thực tế thông qua việc thu nhận, giải mã, đo đạc vi giây thời lượng sóng mang. Sau đó, hệ thống lưu trữ và phát lại chính xác các tín hiệu này để điều khiển trực tiếp thiết bị thật (như TV, Điều hòa/AC). Dự án tập trung vào việc giải quyết các bài toán kỹ thuật thực tế trên vi điều khiển như tối ưu hóa bộ nhớ SRAM, sửa lỗi tràn ngăn xếp của FreeRTOS, và cấu hình hiệu chuẩn phần mềm để phát sóng mang tần số chuẩn 38.4 kHz.
 
 ## 2. KIẾN TRÚC HỆ THỐNG
 
-### 2.1 Luồng hoạt động của chức năng lưu trữ tín hiệu
+### 2.1 Quy trình học và phát lệnh 
 
 1. **Khởi động:** Hệ thống khởi tạo và gán một thiết bị hoạt động mặc định (`activeDevice`) ngay khi tải trang.
 2. **Kích hoạt học lệnh (Learning):**
@@ -40,7 +40,7 @@ Hệ thống hỗ trợ tính năng học lệnh (Learn) tín hiệu hồng ngo�
    * Bấm nút vừa học trên màn hình TouchGFX.
    * Hệ thống truy xuất mã tín hiệu đã lưu và phát lại qua đầu phát hồng ngoại ở chân `PD12`.
 
-### 2.2 Cấu hình chân ngoại vi (Peripheral Pin Configuration)
+### 2.2 Cấu hình chân ngoại vi 
 Để hệ thống hoạt động chính xác, các linh kiện ngoại vi thu/phát hồng ngoại cần được kết nối vào các chân GPIO của mạch STM32F429I_DISCO theo cấu hình dưới đây:
 
 | Linh kiện ngoại vi | Chân GPIO trên Board | Chức năng cấu hình trong vi điều khiển | Ghi chú |
@@ -55,7 +55,7 @@ Hệ thống hỗ trợ tính năng học lệnh (Learn) tín hiệu hồng ngo�
 ## 3. THIẾT KẾ PHẦN MỀM
 
 ### 3.1 Thu nhận & Giải mã Tín hiệu Hồng ngoại (IR Capture & Decoding)
-* Hỗ trợ giải mã tự động các giao thức phổ biến: **NEC**, **Samsung 32-bit (hỗ trợ địa chỉ 16-bit đầy đủ)**, **Sony SIRC** (12-bit, 15-bit, 20-bit), và **Philips RC5**.
+  * Hỗ trợ giải mã tự động các giao thức phổ biến: **NEC**, **Samsung 32-bit (hỗ trợ địa chỉ 16-bit đầy đủ)**, **Sony SIRC** (12-bit, 15-bit, 20-bit), và **Philips RC5**.
   * Đối với các tín hiệu không thuộc các giao thức trên (ví dụ: tín hiệu của Remote Điều hòa), hệ thống tự động lưu trữ dưới dạng chuỗi xung thô (**RAW**).
   * **Lọc nhiễu thông minh:** Tự động loại bỏ các khung truyền quá ngắn do nhiễu môi trường (ít hơn 10 sườn xung) trong lúc học lệnh, giúp tránh học sai tín hiệu.
 
@@ -67,7 +67,7 @@ Hệ thống hỗ trợ tính năng học lệnh (Learn) tín hiệu hồng ngo�
 ### 3.3 Quản lý thiết bị lưu trữ dạng tĩnh (Static Registry)
   * Quản lý danh sách thiết bị và nút nhấn hoàn toàn bằng cơ chế tĩnh (`Static Pool`), không sử dụng bộ nhớ động (`malloc`) giúp loại bỏ hoàn toàn rủi ro phân mảnh bộ nhớ và lỗi FreeRTOS Stack Overflow.
 
-### Giao diện TouchGFX trực quan & phản hồi trạng thái bằng màu sắc động
+### 3.4 Giao diện TouchGFX trực quan & phản hồi trạng thái bằng màu sắc động
   * Chỉ thị trạng thái bằng màu sắc của các nút nhấn trong quá trình nạp tín hiệu: Màu **Vàng (Waiting)** báo hiệu chờ chọn nút nạp lệnh, màu **Đỏ (Learning)** báo hiệu đang chờ nhận tín hiệu hồng ngoại.
   * **Phản hồi xúc giác (Haptic Feedback):** Kích hoạt mô-tơ rung phản hồi bằng một nhịp rung ngắn ngay khi học thành công tín hiệu và lưu vào cơ sở dữ liệu.
 
