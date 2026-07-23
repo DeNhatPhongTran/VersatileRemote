@@ -80,10 +80,26 @@ Hệ thống hỗ trợ tính năng học lệnh tín hiệu hồng ngoại (IR)
 1. **Chuẩn bị**:
    - Kết nối cổng thu hồng ngoại vào chân Input Capture của chip.
    - Kết nối module phát hồng ngoại `IR Transmitter` (chân dữ liệu SIG kết nối vào chân `PD12` của STM32, cấp nguồn `VCC` vào chân `5V`).
-   - Mở terminal giám sát UART qua cổng `USART1` trên máy tính:
-     ```bash
-     pio device monitor -p /dev/cu.usbmodem103 -b 115200
-     ```
+   - Mở terminal giám sát UART qua cổng **USART1** để theo dõi log hệ thống. Có hai cách thực hiện:
+
+      **Cách 1 (Khuyến nghị trên Windows):**  
+      Sử dụng phần mềm **Hercules Setup Utility**.
+      - Chọn đúng cổng COM của STM32.
+      - Cấu hình Baudrate: **115200**
+      - Sau khi kết nối, toàn bộ thông tin debug sẽ được hiển thị trên cửa sổ Serial.
+
+      **Cách 2 (Sử dụng PlatformIO Core):**  
+      Nếu chưa có công cụ dòng lệnh của PlatformIO, cài đặt **PlatformIO Core (CLI)** hoặc cài đặt PlatformIO thông qua Visual Studio Code. Sau đó mở terminal và chạy:
+
+      ```bash
+      pio device monitor -p COM3 -b 115200
+      ```
+
+      Trong đó:
+      - `pio`: chương trình dòng lệnh của PlatformIO.
+      - `device monitor`: mở trình giám sát cổng Serial.
+      - `-p COM3`: chỉ định cổng Serial cần kết nối (trên Windows thay `COM3` bằng cổng COM thực tế, trên Linux/macOS có thể là `/dev/ttyUSB0`, `/dev/ttyACM0`, `/dev/cu.usbmodem103`, ...).
+      - `-b 115200`: thiết lập tốc độ truyền (baudrate) là **115200 bps**, phải trùng với cấu hình của `USART1` trong chương trình.
 
 2. **Quy trình học lệnh và phát**:
    - Trên màn hình điều khiển (TV hoặc AC), hệ thống đã chọn sẵn thiết bị mặc định.
